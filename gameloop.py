@@ -1,3 +1,4 @@
+import json
 import time
 from logging import getLogger
 
@@ -23,8 +24,9 @@ class World:
 class GameLoop:
     """Наследуемся переопределяем loop"""
 
-    def __init__(self, is_test=True):
+    def __init__(self, is_test=True, once=False):
         self.running = False
+        self.once = once
         self.client = ApiClient("test" if is_test else "prod")
 
         self.turn_end_sleep_sec = 0
@@ -62,6 +64,9 @@ class GameLoop:
                 self.loop_body()
                 ##
                 #
+
+                if self.once:
+                    return
 
         except Exception as e:
             raise e
