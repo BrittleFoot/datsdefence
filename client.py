@@ -85,6 +85,18 @@ class ApiClient:
     def rounds(self):
         return self.get("rounds/zombidef")
 
+    def world(self):
+        return self.get("play/zombidef/world")
+
+    def units(self):
+        return self.get("play/zombidef/units")
+
+    def participate(self):
+        return self.put("play/zombidef/participate")
+
+    def command(self, commands):
+        return self.post("play/zombidef/command", json=commands)
+
 
 api_test = ApiClient("test")
 api_prod = ApiClient("prod")
