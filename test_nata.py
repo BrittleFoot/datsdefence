@@ -9,16 +9,18 @@ import tkinter
 # 158 148
 
 
-def is_in_radius(zombie_x,zombie_y, center_x, center_y, isHead):
-    if isHead:
-        radius = 8
-    else:
-        radius = 5
-    return math.sqrt(abs(zombie_x - center_x))  + math.sqrt(abs(zombie_y - center_y))  <= math.sqrt(radius)
+
 
 
 
 class NataLoop(GameLoop):
+    @staticmethod
+    def is_in_radius(zombie_x, zombie_y, center_x, center_y, isHead):
+        if isHead:
+            radius = 8
+        else:
+            radius = 5
+        return math.sqrt(abs(zombie_x - center_x)) + math.sqrt(abs(zombie_y - center_y)) <= math.sqrt(radius)
 
     def get_attack_sequence(self, units: dict):
         attacks =[]
