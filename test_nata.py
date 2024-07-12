@@ -19,11 +19,13 @@ pprint(units)
 
 base_x = []
 base_y =[]
-
+# 151
+# 153
+# 158 148
 for base_block in units['base']:
     for zombie in units['zombies']:
-        if base_block['x'] +5 > zombie['x'] > base_block['x'] -5 \
-                and base_block['y'] +5 > zombie['y'] > base_block['y'] -5:
+        if base_block['x'] +5 < zombie['x'] < base_block['x'] -5 \
+                and base_block['y'] +5 < zombie['y'] < base_block['y'] -5:
             command['attack'].append(
             {
                 "blockId": base_block['id'],
