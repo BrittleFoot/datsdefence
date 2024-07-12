@@ -1,7 +1,7 @@
 from pprint import pprint
 
 from client import api_test
-from test_igor import MyLoop
+from gameloop import GameLoop
 import math
 import tkinter
 # 151
@@ -10,11 +10,11 @@ import tkinter
 
 
 def is_in_radius(zombie_x,zombie_y, center_x, center_y, radius=5):
-    return math.sqrt(zombie_x - center_x)  + math.sqrt(zombie_y - center_y)  <= math.sqrt(radius)
+    return math.sqrt(abs(zombie_x - center_x))  + math.sqrt(abs(zombie_y - center_y))  <= math.sqrt(radius)
 
 
 
-class NataLoop(MyLoop):
+class NataLoop(GameLoop):
     def loop_body(self):
         command = {
             "attack": [
@@ -23,7 +23,7 @@ class NataLoop(MyLoop):
             ],
         }
 
-        units = self.world.raw_data.units()
+        units = self.world.raw_data
         pprint(units)
 
         base_x = []
