@@ -11,6 +11,32 @@ def is_in_radius(zombie_x, zombie_y, center_x, center_y, radius=5):
     ) <= math.sqrt(radius)
 
 
+def cross(x, y):
+    yield x - 1, y
+    yield x, y - 1
+    yield x + 1, y
+    yield x, y + 1
+
+
+def circle(x, y):
+    yield x - 1, y - 1
+    yield x - 1, y
+    yield x - 1, y + 1
+    yield x, y - 1
+    # yield x, y
+    yield x, y + 1
+    yield x + 1, y
+    yield x + 1, y - 1
+    yield x + 1, y + 1
+
+
+def build(x, y):
+    return {
+        "x": x,
+        "y": y,
+    }
+
+
 class IgorLoop(GameLoop):
     def loop_body(self):
         command = {
@@ -48,7 +74,7 @@ class IgorLoop(GameLoop):
 
         world = self.world.world
 
-        base = {(block["x"], block["y"]) for block in units.get("base", [])}
+        bases = {(block["x"], block["y"]) for block in units.get("base", [])}
         zombies = {(zombie["x"], zombie["y"]) for zombie in units.get("zombies", [])}
         enemy = {(zombie["x"], zombie["y"]) for zombie in units.get("enemyBlock", [])}
         spawner = {
@@ -62,34 +88,43 @@ class IgorLoop(GameLoop):
             if wall["type"] == "wall"
         }
 
-        while gold > 0:
-            for x in base_x:
-                for y in base_y:
-                    command["build"].append(
-                        {
-                            "x": x - 1,
-                            "y": y,
-                        }
-                    )
-                    command["build"].append(
-                        {
-                            "x": x,
-                            "y": y - 1,
-                        }
-                    )
-                    command["build"].append(
-                        {
-                            "x": x + 1,
-                            "y": y,
-                        }
-                    )
-                    command["build"].append(
-                        {
-                            "x": x,
-                            "y": y + 1,
-                        }
-                    )
-                    gold -= 4
+        built = set()
+        invalid = set()
+
+        for e in bases:
+            invalid.add(e)
+
+        for x, y in zombies:
+            invalid.add((x, y))
+
+        for x, y in enemy:
+            invalid.add((x, y))
+            invalid |= set(circle(x, y))
+
+        for x, y in spawner:
+            invalid.add((x, y))
+            invalid |= set(cross(x, y))
+
+        for x, y in walls:
+            invalid.add((x, y))
+            invalid |= set(cross(x, y))
+
+        built_today = 0
+
+        for (x0, y0), b in bases:
+            if gold == 0:
+                break
+
+            for x, y in cross(x0, y0):
+                if (x, y) in invalid:
+                    continue
+
+                command["build"].append(build(x, y))
+                built.add((x, y))
+                gold -= 1
+
+                if gold == 0:
+                    break
 
         return
         pprint(api_test.command(command))
