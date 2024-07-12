@@ -32,14 +32,18 @@ class NataLoop(GameLoop):
 
         base_x = []
         base_y = []
+        head = None
 
         for base_block in units['base']:
+            base_x.append(base_block['x'])
+            base_y.append(base_block['y'])
+
             if units['enemyBlocks']:
                 for enemyBlock in units['enemyBlocks']:
                     if 'isHead' in base_block:
                         isHead = True
                         head = f"{base_block['x']},{base_block['y']}"
-                        print(f' головной офис у нас тут {head}')
+
                     else:
                         isHead = False
 
@@ -62,34 +66,34 @@ class NataLoop(GameLoop):
                             enemyBlock['health'] = enemyBlock['health'] - 10
                         break
 
-            for zombie in units['zombies']:
-                # if base_block['x'] +5 <= zombie['x'] <= base_block['x'] -5 \
-                #         and base_block['y'] +5 <= zombie['y'] <= base_block['y'] -5:
-                if 'isHead' in base_block:
-                    isHead = True
-                else:
-                    isHead = False
-
-                if zombie['health']<40 and isHead:
-                    continue
-
-                if is_in_radius(zombie['x'], zombie['y'], base_block['x'], base_block['y'],isHead) and zombie['health']>0:
-                    command['attack'].append(
-                        {
-                            "blockId": base_block['id'],
-                            "target": {
-                                "x": zombie['x'],
-                                "y": zombie['y'],
-                            }}
-                    )
-                    if isHead:
-                        zombie['health'] = zombie['health'] - 40
+            if units['zombies']:
+                for zombie in units['zombies']:
+                    # if base_block['x'] +5 <= zombie['x'] <= base_block['x'] -5 \
+                    #         and base_block['y'] +5 <= zombie['y'] <= base_block['y'] -5:
+                    if 'isHead' in base_block:
+                        isHead = True
                     else:
-                        zombie['health'] = zombie['health'] - 10
-                    break
+                        isHead = False
 
-            base_x.append(base_block['x'])
-            base_y.append(base_block['y'])
+                    if zombie['health']<40 and isHead:
+                        continue
+
+                    if is_in_radius(zombie['x'], zombie['y'], base_block['x'], base_block['y'],isHead) and zombie['health']>0:
+                        command['attack'].append(
+                            {
+                                "blockId": base_block['id'],
+                                "target": {
+                                    "x": zombie['x'],
+                                    "y": zombie['y'],
+                                }}
+                        )
+                        if isHead:
+                            zombie['health'] = zombie['health'] - 40
+                        else:
+                            zombie['health'] = zombie['health'] - 10
+                        break
+
+
 
         gold = units['player']['gold']
 
@@ -158,6 +162,8 @@ class NataLoop(GameLoop):
         print(f"враги в радиусе видимости {units['enemyBlocks']}")
         print(min(base_x), min(base_y))
         print(max(base_x), max(base_y))
+        if head:
+            print(f' головной офис у нас тут {head}')
         # print(head)
         print('====')
 
