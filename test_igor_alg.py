@@ -37,6 +37,13 @@ def build(x, y):
     }
 
 
+def getarr(dict, key):
+    v = dict.get(key, [])
+    if v is None:
+        return []
+    return v
+
+
 class IgorLoop(GameLoop):
     def loop_body(self):
         command = {
@@ -45,17 +52,32 @@ class IgorLoop(GameLoop):
         }
 
         units = self.world.raw_data
-        pprint(units)
+        # pprint(units)
 
         base_x = []
         base_y = []
 
-        for base_block in units["base"]:
-            for zombie in units["zombies"]:
+        for base_block in getarr(units, "base"):
+            for zombie in getarr(units, "zombies"):
                 # if base_block['x'] +5 <= zombie['x'] <= base_block['x'] -5 \
                 #         and base_block['y'] +5 <= zombie['y'] <= base_block['y'] -5:
-                if is_in_radius(
-                    zombie["x"], zombie["y"], base_block["x"], base_block["y"]
+                if "isHead" in base_block:
+                    isHead = True
+                else:
+                    isHead = False
+
+                if zombie["health"] < 40 and isHead:
+                    continue
+
+                if (
+                    is_in_radius(
+                        zombie["x"],
+                        zombie["y"],
+                        base_block["x"],
+                        base_block["y"],
+                        isHead,
+                    )
+                    and zombie["health"] > 0
                 ):
                     command["attack"].append(
                         {
@@ -66,6 +88,11 @@ class IgorLoop(GameLoop):
                             },
                         }
                     )
+                    if isHead:
+                        zombie["health"] = zombie["health"] - 40
+                    else:
+                        zombie["health"] = zombie["health"] - 10
+                    break
 
             base_x.append(base_block["x"])
             base_y.append(base_block["y"])
@@ -74,9 +101,10 @@ class IgorLoop(GameLoop):
 
         world = self.world.world
 
-        bases = {(block["x"], block["y"]) for block in units.get("base", [])}
-        zombies = {(zombie["x"], zombie["y"]) for zombie in units.get("zombies", [])}
-        enemy = {(zombie["x"], zombie["y"]) for zombie in units.get("enemyBlock", [])}
+        bases = {(block["x"], block["y"]) for block in getarr(units, "base")}
+        zombies = {(zombie["x"], zombie["y"]) for zombie in getarr(units, "zombies")}
+        enemy = {(zombie["x"], zombie["y"]) for zombie in getarr(units, "enemyBlock")}
+
         spawner = {
             (wall["x"], wall["y"])
             for wall in world.get("zpots", [])
@@ -108,8 +136,6 @@ class IgorLoop(GameLoop):
         for x, y in walls:
             invalid.add((x, y))
             invalid |= set(cross(x, y))
-
-        built_today = 0
 
         for (x0, y0), b in bases:
             if gold == 0:
