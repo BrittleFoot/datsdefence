@@ -10,12 +10,12 @@ def timestamp_ms():
 class World:
     def __init__(self, client: ApiClient):
         self.client = client
-        self.raw_static = {}
+        self.raw_static = self.client.world()
         self.raw_data = {}
 
     def update(self):
         self.raw_data = self.client.units()
-        self.raw_static = self.client.rounds()
+        return self.raw_data["turn"], self.raw_data["turnEndsInMs"]
 
 
 class GameLoop:
@@ -26,7 +26,9 @@ class GameLoop:
         self.client = ApiClient("test" if is_test else "prod")
 
         self.timestamp = timestamp_ms()
+
         self.turn_end = self.timestamp
+        self.turn = 0
 
         self.world = World(self.client)
 
