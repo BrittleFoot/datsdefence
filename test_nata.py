@@ -24,7 +24,7 @@ class NataLoop(GameLoop):
         }
 
         units = self.world.raw_data
-        pprint(units)
+        # pprint(units)
 
         base_x = []
         base_y = []
@@ -77,7 +77,12 @@ class NataLoop(GameLoop):
                     )
                     gold -= 4
 
-        pprint(api_test.command(command))
+        api_test.command(command)
+
+        pprint(units['player'])
+        print(f"блоков базы {len(units['base'])}")
+        print(f"зомби в радиусе видимости {len(units['zombies'])}")
+        print(f"враги в радиусе видимости {len(units['enemyBlocks'])}")
 
 
 
