@@ -19,6 +19,68 @@ def is_in_radius(zombie_x,zombie_y, center_x, center_y, isHead):
 
 
 class NataLoop(GameLoop):
+
+    def get_attack_sequence(self, units: dict):
+        attacks =[]
+
+        for base_block in units['base']:
+
+
+            if units['enemyBlocks']:
+                for enemyBlock in units['enemyBlocks']:
+                    if 'isHead' in base_block:
+                        isHead = True
+                        head = f"{base_block['x']},{base_block['y']}"
+
+                    else:
+                        isHead = False
+
+                    if enemyBlock['health'] < 40 and isHead:
+                        continue
+
+                    if is_in_radius(enemyBlock['x'], enemyBlock['y'], base_block['x'], base_block['y'], isHead) and enemyBlock[
+                        'health'] > 0:
+                        attacks.append(
+                            {
+                                "blockId": base_block['id'],
+                                "target": {
+                                    "x": enemyBlock['x'],
+                                    "y": enemyBlock['y'],
+                                }}
+                        )
+                        if isHead:
+                            enemyBlock['health'] = enemyBlock['health'] - 40
+                        else:
+                            enemyBlock['health'] = enemyBlock['health'] - 10
+                        break
+
+            if units['zombies']:
+                for zombie in units['zombies']:
+                    # if base_block['x'] +5 <= zombie['x'] <= base_block['x'] -5 \
+                    #         and base_block['y'] +5 <= zombie['y'] <= base_block['y'] -5:
+                    if 'isHead' in base_block:
+                        isHead = True
+                    else:
+                        isHead = False
+
+                    if zombie['health']<40 and isHead:
+                        continue
+
+                    if is_in_radius(zombie['x'], zombie['y'], base_block['x'], base_block['y'],isHead) and zombie['health']>0:
+                        attacks.append(
+                            {
+                                "blockId": base_block['id'],
+                                "target": {
+                                    "x": zombie['x'],
+                                    "y": zombie['y'],
+                                }}
+                        )
+                        if isHead:
+                            zombie['health'] = zombie['health'] - 40
+                        else:
+                            zombie['health'] = zombie['health'] - 10
+                        break
+
     def loop_body(self):
         command = {
             "attack": [
