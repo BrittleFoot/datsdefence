@@ -48,7 +48,7 @@ class NataLoop(GameLoop):
 
         gold = units['player']['gold']
 
-        while gold > 0:
+        while gold > 20:
             for x in base_x:
                 for y in base_y:
                     command['build'].append(
@@ -75,14 +75,41 @@ class NataLoop(GameLoop):
                             "y": y + 1,
                         }
                     )
+                    command['build'].append(
+                        {
+                            "x": x - 1,
+                            "y": y + 1 ,
+                        }
+                    )
+                    command['build'].append(
+                        {
+                            "x": x + 1 ,
+                            "y": y - 1,
+                        }
+                    )
+                    command['build'].append(
+                        {
+                            "x": x + 1,
+                            "y": y + 1 ,
+                        }
+                    )
+                    command['build'].append(
+                        {
+                            "x": x - 1 ,
+                            "y": y - 1,
+                        }
+                    )
                     gold -= 4
+                    if gold<20:
+                        break
 
         api_test.command(command)
 
         pprint(units['player'])
         print(f"блоков базы {len(units['base'])}")
         print(f"зомби в радиусе видимости {len(units['zombies'])}")
-        print(f"враги в радиусе видимости {len(units['enemyBlocks'])}")
+        print(f"враги в радиусе видимости {units['enemyBlocks']}")
+        print('====')
 
 
 
