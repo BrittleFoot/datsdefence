@@ -92,7 +92,9 @@ class ApiClient:
     ######################################
 
     def rounds(self):
-        return self.get("rounds/zombidef")
+        rounds = self.get("rounds/zombidef")
+        rounds["rounds"] = [r for r in rounds["rounds"] if r["status"] != "ended"]
+        return rounds
 
     def world(self):
         return self.get("play/zombidef/world")
