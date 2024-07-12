@@ -55,7 +55,7 @@ class GameLoop:
                 self.turn_end_sleep_sec = turn_delta / 1000
 
                 with open("info.log", "w+", encoding="utf-8") as f:
-                    print(json.dumps(self.world.units, indent=2), file=f)
+                    print(json.dumps(f"{self.turn}: {self.world.units}", indent=2), file=f)
 
                 #
                 ##
