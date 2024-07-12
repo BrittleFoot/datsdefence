@@ -20,7 +20,7 @@ class World:
 class GameLoop:
     """Наследуемся переопределяем loop"""
 
-    def __init__(self, is_test: bool):
+    def __init__(self, is_test=True):
         self.running = False
         self.client = ApiClient("test" if is_test else "prod")
 
