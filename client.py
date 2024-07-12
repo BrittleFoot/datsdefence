@@ -1,3 +1,4 @@
+import json
 from functools import wraps
 from logging import basicConfig, getLogger
 from os import environ
@@ -77,9 +78,11 @@ class ApiClient:
             self.logger.error(f"request error: {e}")
             raise
 
-        response.raise_for_status()
-
         self.logger.info(f"{response.status_code} {method} /{url} ")
+
+        if response.status_code >= 300:
+            raise Exception(json.dumps(response.json(), indent=2))
+
         return response.json()
 
     ######################################
