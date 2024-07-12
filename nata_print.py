@@ -4,5 +4,5 @@ from client import api_test
 
 units = api_test.units()
 pprint(units['player'])
-print(len(units['base']))
-print(len(units['zombies']))
+print(f"блоков базы {len(units['base'])}")
+print(f"зомби в радиусе видимости {len(units['zombies'])}")
