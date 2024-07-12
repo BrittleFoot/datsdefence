@@ -39,6 +39,7 @@ class NataLoop(GameLoop):
                     if 'isHead' in base_block:
                         isHead = True
                         head = f"{base_block['x']},{base_block['y']}"
+                        print(f' головной офис у нас тут {head}')
                     else:
                         isHead = False
 
@@ -159,6 +160,7 @@ class NataLoop(GameLoop):
         print(max(base_x), max(base_y))
         # print(head)
         print('====')
+
 
 
 
