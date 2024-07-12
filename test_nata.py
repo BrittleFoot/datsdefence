@@ -41,6 +41,10 @@ class NataLoop(GameLoop):
                     isHead = True
                 else:
                     isHead = False
+
+                if zombie['health']<40 and isHead:
+                    continue
+
                 if is_in_radius(zombie['x'], zombie['y'], base_block['x'], base_block['y'],isHead) and zombie['health']>0:
                     command['attack'].append(
                         {
@@ -54,7 +58,7 @@ class NataLoop(GameLoop):
                         zombie['health'] = zombie['health'] - 40
                     else:
                         zombie['health'] = zombie['health'] - 10
-                    continue
+                    break
 
             base_x.append(base_block['x'])
             base_y.append(base_block['y'])
