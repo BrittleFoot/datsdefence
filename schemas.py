@@ -41,6 +41,11 @@ class Zpots(BaseModel):  # World
     y: Optional[str]
 
 
+class World(BaseModel):
+    realmName: Optional[str]
+    zpots: list[Zpots]
+
+
 class Units(BaseModel):
     base: Optional[Base]
     enemyBlocks: Optional[None]
