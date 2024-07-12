@@ -9,7 +9,11 @@ import tkinter
 # 158 148
 
 
-def is_in_radius(zombie_x,zombie_y, center_x, center_y, radius=5):
+def is_in_radius(zombie_x,zombie_y, center_x, center_y,isHead ):
+    if isHead:
+        radius = 8
+    else:
+        radius = 5
     return math.sqrt(abs(zombie_x - center_x))  + math.sqrt(abs(zombie_y - center_y))  <= math.sqrt(radius)
 
 
@@ -33,7 +37,11 @@ class NataLoop(GameLoop):
             for zombie in units['zombies']:
                 # if base_block['x'] +5 <= zombie['x'] <= base_block['x'] -5 \
                 #         and base_block['y'] +5 <= zombie['y'] <= base_block['y'] -5:
-                if is_in_radius(zombie['x'], zombie['y'], base_block['x'], base_block['y']):
+                if 'isHead' in base_block:
+                    isHead = True
+                else:
+                    isHead = False
+                if is_in_radius(zombie['x'], zombie['y'], base_block['x'], base_block['y'],isHead) and zombie['health']>0:
                     command['attack'].append(
                         {
                             "blockId": base_block['id'],
@@ -42,6 +50,11 @@ class NataLoop(GameLoop):
                                 "y": zombie['y'],
                             }}
                     )
+                    if isHead:
+                        zombie['health'] = zombie['health'] - 40
+                    else:
+                        zombie['health'] = zombie['health'] - 10
+                    continue
 
             base_x.append(base_block['x'])
             base_y.append(base_block['y'])
@@ -100,7 +113,7 @@ class NataLoop(GameLoop):
                         }
                     )
                     gold -= 4
-                    if gold<20:
+                    if gold<5:
                         break
 
         api_test.command(command)
