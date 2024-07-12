@@ -23,7 +23,7 @@ class NataLoop(MyLoop):
             ],
         }
 
-        units = api_test.units()
+        units = self.world.raw_data.units()
         pprint(units)
 
         base_x = []
@@ -46,7 +46,9 @@ class NataLoop(MyLoop):
             base_x.append(base_block['x'])
             base_y.append(base_block['y'])
 
-        for i in range(units['player']['gold']):
+        gold = units['player']['gold']
+
+        while gold > 0:
             for x in base_x:
                 for y in base_y:
                     command['build'].append(
@@ -73,6 +75,7 @@ class NataLoop(MyLoop):
                             "y": y + 1,
                         }
                     )
+                    gold -= 4
 
         pprint(api_test.command(command))
 
