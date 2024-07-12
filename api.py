@@ -16,5 +16,13 @@ def r():
     pprint(api_test.rounds())
 
 
+def u():
+    pprint(api_test.units())
+
+
+def w():
+    pprint(api_test.world())
+
+
 if __name__ == "__main__":
     fire.Fire()
