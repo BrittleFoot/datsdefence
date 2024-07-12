@@ -41,6 +41,9 @@ class GameLoop:
 
         self.world = World(self.client, test)
 
+        if test:
+            self.client.command = lambda x: print(x)
+
     def _start(self):
         self.running = True
         self.start()
