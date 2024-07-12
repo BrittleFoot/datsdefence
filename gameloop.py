@@ -14,6 +14,7 @@ class World:
 
     def update(self):
         self.raw_data = self.client.units()
+        # self.units = Units.model_validate(self.raw_data)
         return self.raw_data["turn"], self.raw_data["turnEndsInMs"]
 
 
