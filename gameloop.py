@@ -22,8 +22,8 @@ class World:
         if self.test:
             with open("test.json", "r") as f:
                 self.raw_data = json.load(f)
-
-        self.raw_data = self.client.units()
+        else:
+            self.raw_data = self.client.units()
         self.units = self.raw_data
         return self.raw_data["turn"], self.raw_data["turnEndsInMs"]
 
