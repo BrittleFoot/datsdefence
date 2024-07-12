@@ -1,5 +1,5 @@
 from functools import wraps
-from logging import getLogger
+from logging import basicConfig, getLogger
 from os import environ
 
 import requests
@@ -11,6 +11,12 @@ TEST = "https://games-test.datsteam.dev/"
 PROD = "https://games.datsteam.dev/"
 
 KEY = environ["DAD_TOKEN"]
+
+
+basicConfig(
+    level="INFO",
+    format="[%(name)s][%(levelname)s] %(message)s",
+)
 
 
 class ApiClient:
@@ -61,19 +67,19 @@ class ApiClient:
         requests.request wrapper
         """
         try:
-            url = self.base + url
+            fullurl = self.base + url
             kwargs["headers"] = {
                 **kwargs.get("headers", {}),
                 "X-Auth-Token": KEY,
             }
-            response = requests.request(method, url, **kwargs)
+            response = requests.request(method, fullurl, **kwargs)
         except Exception as e:
             self.logger.error(f"request error: {e}")
             raise
 
         response.raise_for_status()
 
-        self.logger.info(f"{response.status_code} {response.request.method} {url} ")
+        self.logger.info(f"{response.status_code} {method} /{url} ")
         return response.json()
 
     ######################################
