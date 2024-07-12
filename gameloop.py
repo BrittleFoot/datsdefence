@@ -41,8 +41,9 @@ class GameLoop:
 
         self.world = World(self.client, test)
 
+        self.test = test
         if test:
-            self.client.command = lambda x: print(x)
+            self.client.command = lambda x: "Its test, nothing sent to server"
 
     def _start(self):
         self.running = True
@@ -66,8 +67,10 @@ class GameLoop:
 
                 self.turn_end_sleep_sec = turn_delta / 1000
 
-                with open("info.log", "a", encoding="utf-8") as f:
-                    print(self.turn, json.dumps(self.world.units, indent=2), file=f)
+                realm = self.world.units.get("realmName", "")
+                with open(f"info-{realm}.log", "a") as f:
+                    if not self.test:
+                        print(json.dumps(self.world.units), file=f)
 
                 #
                 ##
