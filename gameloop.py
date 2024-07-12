@@ -11,21 +11,43 @@ class World:
     def __init__(self, client: ApiClient, test):
         self.test = test
         self.client = client
-        self.raw_static = {}
-        if not test:
-            self.raw_static = self.client.world()
-        self.raw_data = {}
-        self.units = self.raw_data
-        self.world = self.raw_static
+        self._static = {}
+        self.update_static()
+        self.units = {}
+
+    def update_static(self):
+        if self.test:
+            self.world = {
+                "zpots": [],
+                "realmName": "Test Realm",
+            }
+            return
+
+        static = self.client.world()
+        for zpot in static["zpots"]:
+            key = (zpot["x"], zpot["y"])
+
+            if key in self._static:
+                continue
+
+            self._static[(zpot["x"], zpot["y"])] = zpot
+
+        self.world = {
+            "zpots": list(self._static.values()),
+            "realmName": static["realmName"],
+        }
 
     def update(self):
         if self.test:
             with open("test.json", "r") as f:
-                self.raw_data = json.load(f)
+                self.units = json.load(f)
         else:
-            self.raw_data = self.client.units()
-        self.units = self.raw_data
-        return self.raw_data["turn"], self.raw_data["turnEndsInMs"]
+            self.units = self.client.units()
+
+        self.units = self.units
+        self.update_static()
+
+        return self.units["turn"], self.units["turnEndsInMs"]
 
 
 class GameLoop:
@@ -43,7 +65,7 @@ class GameLoop:
 
         self.test = test
         if test:
-            self.client.command = lambda x: "Its test, nothing sent to server"
+            self.client.command = lambda x: "Its test, sending nothing to server"
 
     def _start(self):
         self.running = True
@@ -53,6 +75,15 @@ class GameLoop:
     def _stop(self):
         self.running = False
         self.stop()
+
+    def dump_world(self):
+        if self.test:
+            return
+        realm = self.world.units.get("realmName", "")
+        with open(f"info-units-{realm}.log", "a") as f:
+            print(json.dumps(self.world.units), file=f)
+        with open(f"info-world-{realm}.log", "a") as f:
+            print(json.dumps(self.world.world), file=f)
 
     def _loop(self):
         try:
@@ -67,11 +98,7 @@ class GameLoop:
 
                 self.turn_end_sleep_sec = turn_delta / 1000
 
-                realm = self.world.units.get("realmName", "")
-                with open(f"info-{realm}.log", "a") as f:
-                    if not self.test:
-                        print(json.dumps(self.world.units), file=f)
-
+                self.dump_world()
                 #
                 ##
                 self.loop_body()

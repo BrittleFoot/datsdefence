@@ -44,17 +44,13 @@ def getarr(dict, key):
 
 
 class IgorLoop(GameLoop):
-    def get_attack_sequence(self, units: dict):
+    def get_attack_sequence(self):
         attacks = []
+        units = self.world.units
 
         for base_block in getarr(units, "base"):
             for enemyBlock in getarr(units, "enemyBlocks"):
-                if "isHead" in base_block:
-                    isHead = True
-                    head = f"{base_block['x']},{base_block['y']}"
-
-                else:
-                    isHead = False
+                isHead = base_block.get("isHead", False)
 
                 if enemyBlock["health"] < 40 and isHead:
                     continue
@@ -85,12 +81,7 @@ class IgorLoop(GameLoop):
                     break
 
             for zombie in getarr(units, "zombies"):
-                # if base_block['x'] +5 <= zombie['x'] <= base_block['x'] -5 \
-                #         and base_block['y'] +5 <= zombie['y'] <= base_block['y'] -5:
-                if "isHead" in base_block:
-                    isHead = True
-                else:
-                    isHead = False
+                isHead = base_block.get("isHead", False)
 
                 if zombie["health"] < 40 and isHead:
                     continue
@@ -122,9 +113,75 @@ class IgorLoop(GameLoop):
 
         return attacks
 
+    def get_build(self):
+        commands = []
+
+        units = self.world.units
+        world = self.world.world
+
+        gold = units["player"]["gold"]
+
+        bases = {(block["x"], block["y"]) for block in getarr(units, "base")}
+        zombies = {(zombie["x"], zombie["y"]) for zombie in getarr(units, "zombies")}
+        enemy = {(zombie["x"], zombie["y"]) for zombie in getarr(units, "enemyBlock")}
+
+        spawner = {
+            (wall["x"], wall["y"])
+            for wall in world.get("zpots", [])
+            if wall["type"] == "default"
+        }
+        walls = {
+            (wall["x"], wall["y"])
+            for wall in world.get("zpots", [])
+            if wall["type"] == "wall"
+        }
+
+        built = set()
+        invalid = set()
+
+        for e in bases:
+            invalid.add(e)
+
+        for x, y in zombies:
+            invalid.add((x, y))
+
+        for x, y in enemy:
+            invalid.add((x, y))
+            invalid |= set(circle(x, y))
+
+        # This two following blocks could be not working
+
+        for x, y in spawner:
+            invalid.add((x, y))
+            invalid |= set(cross(x, y))
+
+        for x, y in walls:
+            invalid.add((x, y))
+            invalid |= set(cross(x, y))
+
+        print("invalid", invalid)
+
+        for x0, y0 in bases:
+            if gold == 0:
+                break
+
+            for x, y in cross(x0, y0):
+                if (x, y) in invalid or (x, y) in built:
+                    print("skip", x, y)
+                    continue
+
+                commands.append(build(x, y))
+                built.add((x, y))
+                gold -= 1
+
+                if gold == 0:
+                    break
+
+        return commands
+
     def loop_body(self):
-        build_commands = get_build(self)
-        attack_commands = self.get_attack_sequence(self.world.units)
+        build_commands = self.get_build()
+        attack_commands = self.get_attack_sequence()
 
         commands = {
             "build": build_commands,
@@ -138,71 +195,6 @@ class IgorLoop(GameLoop):
         pprint(self.client.command(commands))
 
         print("=========")
-
-
-def get_build(self: GameLoop):
-    commands = []
-
-    units = self.world.units
-    world = self.world.world
-
-    gold = units["player"]["gold"]
-
-    bases = {(block["x"], block["y"]) for block in getarr(units, "base")}
-    zombies = {(zombie["x"], zombie["y"]) for zombie in getarr(units, "zombies")}
-    enemy = {(zombie["x"], zombie["y"]) for zombie in getarr(units, "enemyBlock")}
-
-    spawner = {
-        (wall["x"], wall["y"])
-        for wall in world.get("zpots", [])
-        if wall["type"] == "default"
-    }
-    walls = {
-        (wall["x"], wall["y"])
-        for wall in world.get("zpots", [])
-        if wall["type"] == "wall"
-    }
-
-    built = set()
-    invalid = set()
-
-    for e in bases:
-        invalid.add(e)
-
-    for x, y in zombies:
-        invalid.add((x, y))
-
-    for x, y in enemy:
-        invalid.add((x, y))
-        invalid |= set(circle(x, y))
-
-    for x, y in spawner:
-        invalid.add((x, y))
-        invalid |= set(cross(x, y))
-
-    for x, y in walls:
-        invalid.add((x, y))
-        invalid |= set(cross(x, y))
-
-    print("invalid", invalid)
-
-    for x0, y0 in bases:
-        if gold == 0:
-            break
-
-        for x, y in cross(x0, y0):
-            if (x, y) in invalid or (x, y) in built:
-                print("skip", x, y)
-                continue
-
-            commands.append(build(x, y))
-            built.add((x, y))
-            gold -= 1
-
-            if gold == 0:
-                break
-
-    return commands
 
 
 IgorLoop(is_test=True, once=True, test=True).just_run_already()

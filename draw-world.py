@@ -1,5 +1,6 @@
 import json
 import sys
+import time
 from pathlib import Path
 
 import imgui
@@ -28,8 +29,9 @@ def ga(arr, key):
 
 
 class World:
-    def __init__(self):
+    def __init__(self, file):
         # Initialize Pygame
+        self.file = file
         pygame.init()
         pygame.display.set_caption("ZOMBIEE")
         self.screen = pygame.display.set_mode(
@@ -40,14 +42,11 @@ class World:
         self.impl = PygameRenderer()
 
         self.io = imgui.get_io()
-
         self.io.display_size = SCREEN
 
-        self.config = {}
-
-        print("INIT DONE")
-
         self.init_ui()
+
+        self.loadt = 0
 
     def draw(self, color, x, y):
         x = x * BOX_SIZE / SCREEN[0] * 2 * self.scale - 1 + self.offsetX / 200
@@ -64,8 +63,12 @@ class World:
         gl.glEnd()
 
     def load(self):
+        if time.time() - self.loadt < 2:
+            return
+        self.loadt = time.time()
+
         self.turns = list(
-            map(json.loads, filter(bool, Path("out2.ljson").read_text().split("\n")))
+            map(json.loads, filter(bool, Path(self.file).read_text().split("\n")))
         )
         self.turns = sorted(self.turns, key=lambda x: x["turn"])
         self.tmap = {t["turn"]: t for t in self.turns}
@@ -81,18 +84,22 @@ class World:
 
             self.tmap[turn] = tmp
 
-        if self.turn_id is None:
-            self.turn_id = self.tmap[low]
-            self.uturn = self.turn_id
+        if self.realtime:
+            self.tdrag = high
+            self.uturn = self.tmap[high]
+
+        if self.uturn is None:
             self.tdrag = low
+            self.uturn = self.tmap[low]
 
     def init_ui(self):
-        self.uturn = {}
+        self.uturn = None
         self.scale = 4
         self.tdrag = None
         self.turn_id = None
         self.offsetX = 0
         self.offsetY = 0
+        self.realtime = False
 
     def ui(self):
         imgui.begin("Config")
@@ -108,10 +115,15 @@ class World:
 
         low = min(self.tmap.keys())
         high = max(self.tmap.keys())
-        _, self.tdrag = imgui.drag_int("Turn", self.tdrag, 1, low, high)
+        changed, self.tdrag = imgui.drag_int("Turn", self.tdrag, 1, low, high)
+        if changed:
+            self.realtime = self.tdrag == high
+
         self.uturn = self.tmap[self.tdrag]
 
         imgui.text_ansi(f"Turn: {self.uturn['turn']}")
+
+        _, self.realtime = imgui.checkbox("Realtime", self.realtime)
 
         imgui.end()
 
@@ -166,4 +178,4 @@ class World:
         sys.exit()
 
 
-World().run()
+World("out2.ljson").run()
