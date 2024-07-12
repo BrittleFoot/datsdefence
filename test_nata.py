@@ -9,7 +9,7 @@ import tkinter
 # 158 148
 
 
-def is_in_radius(zombie_x,zombie_y, center_x, center_y,isHead ):
+def is_in_radius(zombie_x,zombie_y, center_x, center_y, isHead):
     if isHead:
         radius = 8
     else:
@@ -34,6 +34,33 @@ class NataLoop(GameLoop):
         base_y = []
 
         for base_block in units['base']:
+            if units['enemyBlocks']:
+                for enemyBlock in units['enemyBlocks']:
+                    if 'isHead' in base_block:
+                        isHead = True
+                        head = f"{base_block['x']},{base_block['y']}"
+                    else:
+                        isHead = False
+
+                    if enemyBlock['health'] < 40 and isHead:
+                        continue
+
+                    if is_in_radius(enemyBlock['x'], enemyBlock['y'], base_block['x'], base_block['y'], isHead) and enemyBlock[
+                        'health'] > 0:
+                        command['attack'].append(
+                            {
+                                "blockId": base_block['id'],
+                                "target": {
+                                    "x": enemyBlock['x'],
+                                    "y": enemyBlock['y'],
+                                }}
+                        )
+                        if isHead:
+                            enemyBlock['health'] = enemyBlock['health'] - 40
+                        else:
+                            enemyBlock['health'] = enemyBlock['health'] - 10
+                        break
+
             for zombie in units['zombies']:
                 # if base_block['x'] +5 <= zombie['x'] <= base_block['x'] -5 \
                 #         and base_block['y'] +5 <= zombie['y'] <= base_block['y'] -5:
@@ -65,7 +92,7 @@ class NataLoop(GameLoop):
 
         gold = units['player']['gold']
 
-        while gold > 20:
+        while gold > 4:
             for x in base_x:
                 for y in base_y:
                     command['build'].append(
@@ -120,13 +147,19 @@ class NataLoop(GameLoop):
                     if gold<5:
                         break
 
+
+
         api_test.command(command)
 
         pprint(units['player'])
         print(f"блоков базы {len(units['base'])}")
         print(f"зомби в радиусе видимости {len(units['zombies'])}")
         print(f"враги в радиусе видимости {units['enemyBlocks']}")
+        print(min(base_x), min(base_y))
+        print(max(base_x), max(base_y))
+        # print(head)
         print('====')
+
 
 
 
