@@ -1,0 +1,187 @@
+{
+    "realmName": "test-day1-9",
+    "player": {
+        "gold": 10,
+        "points": 0,
+        "name": "\u0413\u043e\u043c\u041b\u043e\u043c\u041d\u043e\u043c",
+        "zombieKills": 0,
+        "enemyBlockKills": 0,
+        "gameEndedAt": null
+    },
+    "base": [
+        {
+            "id": "0190a843-4a6a-7405-95a8-765bc361dbb7",
+            "x": 172,
+            "y": 8,
+            "health": 98,
+            "attack": 10,
+            "range": 5,
+            "lastAttack": null
+        },
+        {
+            "id": "0190a843-4a6a-740d-8575-6a2d4ee58207",
+            "x": 173,
+            "y": 8,
+            "health": 98,
+            "attack": 10,
+            "range": 5,
+            "lastAttack": null
+        },
+        {
+            "id": "0190a843-4a6a-73f2-868b-1e0f97775ace",
+            "x": 172,
+            "y": 7,
+            "health": 298,
+            "attack": 40,
+            "range": 8,
+            "isHead": true,
+            "lastAttack": null
+        },
+        {
+            "id": "0190a843-4a6a-73fd-8d07-b4598d4dd8b9",
+            "x": 173,
+            "y": 7,
+            "health": 98,
+            "attack": 10,
+            "range": 5,
+            "lastAttack": null
+        }
+    ],
+    "zombies": [
+        {
+            "x": 170,
+            "y": 2,
+            "id": "090c98d1-3f13-416b-ad8c-b1a7eed5b71c",
+            "type": "chaos_knight",
+            "health": 7,
+            "attack": 7,
+            "speed": 3,
+            "waitTurns": 1,
+            "direction": "right"
+        },
+        {
+            "x": 175,
+            "y": 1,
+            "id": "c0a44602-af56-426a-a997-600604076df2",
+            "type": "juggernaut",
+            "health": 7,
+            "attack": 999999,
+            "speed": 1,
+            "waitTurns": 1,
+            "direction": "down"
+        },
+        {
+            "x": 179,
+            "y": 1,
+            "id": "33256c82-7f55-4205-89a3-bcaeb812d9eb",
+            "type": "liner",
+            "health": 7,
+            "attack": 7,
+            "speed": 1,
+            "waitTurns": 1,
+            "direction": "down"
+        },
+        {
+            "x": 164,
+            "y": 10,
+            "id": "e5d23b39-c5d8-435e-b08a-15d2d9477664",
+            "type": "normal",
+            "health": 7,
+            "attack": 7,
+            "speed": 1,
+            "waitTurns": 1,
+            "direction": "left"
+        },
+        {
+            "x": 175,
+            "y": 12,
+            "id": "dbd11ead-86fd-4e73-887e-be5027e84390",
+            "type": "chaos_knight",
+            "health": 5,
+            "attack": 1,
+            "speed": 3,
+            "waitTurns": 1,
+            "direction": "down"
+        },
+        {
+            "x": 181,
+            "y": 2,
+            "id": "131213e1-f58f-4b5f-bed0-91ed25fe9aec",
+            "type": "normal",
+            "health": 7,
+            "attack": 7,
+            "speed": 1,
+            "waitTurns": 1,
+            "direction": "down"
+        },
+        {
+            "x": 183,
+            "y": 4,
+            "id": "2b6bfe54-1690-446e-b4c0-196869e5e754",
+            "type": "chaos_knight",
+            "health": 7,
+            "attack": 7,
+            "speed": 3,
+            "waitTurns": 1,
+            "direction": "left"
+        },
+        {
+            "x": 171,
+            "y": 4,
+            "id": "6e47acde-32fe-4783-bc90-e85717217f8e",
+            "type": "chaos_knight",
+            "health": 5,
+            "attack": 1,
+            "speed": 3,
+            "waitTurns": 1,
+            "direction": "down"
+        },
+        {
+            "x": 181,
+            "y": 3,
+            "id": "3aac9b19-c0de-41f4-9677-3284c62fa001",
+            "type": "liner",
+            "health": 5,
+            "attack": 1,
+            "speed": 1,
+            "waitTurns": 1,
+            "direction": "left"
+        },
+        {
+            "x": 177,
+            "y": 9,
+            "id": "4f32b277-8682-48f9-9d3d-bf4f3df2de48",
+            "type": "normal",
+            "health": 5,
+            "attack": 1,
+            "speed": 1,
+            "waitTurns": 1,
+            "direction": "right"
+        },
+        {
+            "x": 174,
+            "y": 1,
+            "id": "c89b786d-2e41-4126-9ca8-45255408190c",
+            "type": "fast",
+            "health": 7,
+            "attack": 7,
+            "speed": 2,
+            "waitTurns": 1,
+            "direction": "down"
+        },
+        {
+            "x": 178,
+            "y": 1,
+            "id": "1dacaaca-6fd6-4986-9f64-ca5695079441",
+            "type": "fast",
+            "health": 7,
+            "attack": 7,
+            "speed": 2,
+            "waitTurns": 1,
+            "direction": "down"
+        }
+    ],
+    "enemyBlocks": null,
+    "turnEndsInMs": 371,
+    "turn": 18
+}

@@ -8,14 +8,21 @@ logger = getLogger(__name__)
 
 
 class World:
-    def __init__(self, client: ApiClient):
+    def __init__(self, client: ApiClient, test):
+        self.test = test
         self.client = client
-        self.raw_static = self.client.world()
+        self.raw_static = {}
+        if not test:
+            self.raw_static = self.client.world()
         self.raw_data = {}
         self.units = self.raw_data
         self.world = self.raw_static
 
     def update(self):
+        if self.test:
+            with open("test.json", "r") as f:
+                self.raw_data = json.load(f)
+
         self.raw_data = self.client.units()
         self.units = self.raw_data
         return self.raw_data["turn"], self.raw_data["turnEndsInMs"]
@@ -24,7 +31,7 @@ class World:
 class GameLoop:
     """Наследуемся переопределяем loop"""
 
-    def __init__(self, is_test=True, once=False):
+    def __init__(self, is_test=True, once=False, test=False):
         self.running = False
         self.once = once
         self.client = ApiClient("test" if is_test else "prod")
@@ -32,7 +39,7 @@ class GameLoop:
         self.turn_end_sleep_sec = 0
         self.turn = 0
 
-        self.world = World(self.client)
+        self.world = World(self.client, test)
 
     def _start(self):
         self.running = True

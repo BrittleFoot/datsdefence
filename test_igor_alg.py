@@ -107,7 +107,7 @@ class IgorLoop(GameLoop):
         pprint(commands)
 
         print("<<<<<<<<<")
-        pprint(self.client.command())
+        pprint(self.client.command(commands))
 
         print("=========")
 
@@ -156,12 +156,15 @@ def get_build(self: GameLoop):
         invalid.add((x, y))
         invalid |= set(cross(x, y))
 
+    print("invalid", invalid)
+
     for x0, y0 in bases:
         if gold == 0:
             break
 
         for x, y in cross(x0, y0):
             if (x, y) in invalid or (x, y) in built:
+                print("skip", x, y)
                 continue
 
             commands.append(build(x, y))
@@ -171,5 +174,7 @@ def get_build(self: GameLoop):
             if gold == 0:
                 break
 
+    return commands
 
-IgorLoop(is_test=True).just_run_already()
+
+IgorLoop(is_test=True, once=True).just_run_already()
