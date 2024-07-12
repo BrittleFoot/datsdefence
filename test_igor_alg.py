@@ -47,80 +47,79 @@ class IgorLoop(GameLoop):
     def get_attack_sequence(self, units: dict):
         attacks = []
 
-        for base_block in units["base"]:
-            if units["enemyBlocks"]:
-                for enemyBlock in units["enemyBlocks"]:
-                    if "isHead" in base_block:
-                        isHead = True
-                        head = f"{base_block['x']},{base_block['y']}"
+        for base_block in getarr(units, "base"):
+            for enemyBlock in getarr(units, "enemyBlocks"):
+                if "isHead" in base_block:
+                    isHead = True
+                    head = f"{base_block['x']},{base_block['y']}"
 
+                else:
+                    isHead = False
+
+                if enemyBlock["health"] < 40 and isHead:
+                    continue
+
+                if (
+                    is_in_radius(
+                        enemyBlock["x"],
+                        enemyBlock["y"],
+                        base_block["x"],
+                        base_block["y"],
+                        isHead,
+                    )
+                    and enemyBlock["health"] > 0
+                ):
+                    attacks.append(
+                        {
+                            "blockId": base_block["id"],
+                            "target": {
+                                "x": enemyBlock["x"],
+                                "y": enemyBlock["y"],
+                            },
+                        }
+                    )
+                    if isHead:
+                        enemyBlock["health"] = enemyBlock["health"] - 40
                     else:
-                        isHead = False
+                        enemyBlock["health"] = enemyBlock["health"] - 10
+                    break
 
-                    if enemyBlock["health"] < 40 and isHead:
-                        continue
+            for zombie in getarr(units, "zombies"):
+                # if base_block['x'] +5 <= zombie['x'] <= base_block['x'] -5 \
+                #         and base_block['y'] +5 <= zombie['y'] <= base_block['y'] -5:
+                if "isHead" in base_block:
+                    isHead = True
+                else:
+                    isHead = False
 
-                    if (
-                        is_in_radius(
-                            enemyBlock["x"],
-                            enemyBlock["y"],
-                            base_block["x"],
-                            base_block["y"],
-                            isHead,
-                        )
-                        and enemyBlock["health"] > 0
-                    ):
-                        attacks.append(
-                            {
-                                "blockId": base_block["id"],
-                                "target": {
-                                    "x": enemyBlock["x"],
-                                    "y": enemyBlock["y"],
-                                },
-                            }
-                        )
-                        if isHead:
-                            enemyBlock["health"] = enemyBlock["health"] - 40
-                        else:
-                            enemyBlock["health"] = enemyBlock["health"] - 10
-                        break
+                if zombie["health"] < 40 and isHead:
+                    continue
 
-            if units["zombies"]:
-                for zombie in units["zombies"]:
-                    # if base_block['x'] +5 <= zombie['x'] <= base_block['x'] -5 \
-                    #         and base_block['y'] +5 <= zombie['y'] <= base_block['y'] -5:
-                    if "isHead" in base_block:
-                        isHead = True
+                if (
+                    is_in_radius(
+                        zombie["x"],
+                        zombie["y"],
+                        base_block["x"],
+                        base_block["y"],
+                        isHead,
+                    )
+                    and zombie["health"] > 0
+                ):
+                    attacks.append(
+                        {
+                            "blockId": base_block["id"],
+                            "target": {
+                                "x": zombie["x"],
+                                "y": zombie["y"],
+                            },
+                        }
+                    )
+                    if isHead:
+                        zombie["health"] = zombie["health"] - 40
                     else:
-                        isHead = False
+                        zombie["health"] = zombie["health"] - 10
+                    break
 
-                    if zombie["health"] < 40 and isHead:
-                        continue
-
-                    if (
-                        is_in_radius(
-                            zombie["x"],
-                            zombie["y"],
-                            base_block["x"],
-                            base_block["y"],
-                            isHead,
-                        )
-                        and zombie["health"] > 0
-                    ):
-                        attacks.append(
-                            {
-                                "blockId": base_block["id"],
-                                "target": {
-                                    "x": zombie["x"],
-                                    "y": zombie["y"],
-                                },
-                            }
-                        )
-                        if isHead:
-                            zombie["health"] = zombie["health"] - 40
-                        else:
-                            zombie["health"] = zombie["health"] - 10
-                        break
         return attacks
 
     def loop_body(self):
@@ -206,4 +205,4 @@ def get_build(self: GameLoop):
     return commands
 
 
-IgorLoop(is_test=True, once=True, test=True).just_run_already()
+IgorLoop(is_test=True, once=True).just_run_already()
