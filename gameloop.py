@@ -1,10 +1,9 @@
 import time
+from logging import getLogger
 
 from client import ApiClient
 
-
-def timestamp_ms():
-    return time.perf_counter() * 1000  # milliseconds
+logger = getLogger(__name__)
 
 
 class World:
@@ -25,9 +24,7 @@ class GameLoop:
         self.running = False
         self.client = ApiClient("test" if is_test else "prod")
 
-        self.timestamp = timestamp_ms()
-
-        self.turn_end = self.timestamp
+        self.turn_end_sleep_sec = 0
         self.turn = 0
 
         self.world = World(self.client)
@@ -44,10 +41,21 @@ class GameLoop:
     def _loop(self):
         try:
             while self.running:
-                if self.timestamp >= self.turn_end:
-                    self.turn_end = self.timestamp + 1000
+                time.sleep(self.turn_end_sleep_sec)
 
+                turn, turn_delta = self.world.update()
+                if turn <= self.turn:
+                    logger.info(f"Turn {turn} not changed, skipping")
+                    continue
+                self.turn = turn
+
+                self.turn_end_sleep_sec = turn_delta / 1000
+
+                #
+                ##
                 self.loop_body()
+                ##
+                #
 
         except Exception as e:
             raise e

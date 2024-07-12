@@ -78,7 +78,7 @@ class ApiClient:
             self.logger.error(f"request error: {e}")
             raise
 
-        self.logger.info(f"{response.status_code} {method} /{url} ")
+        self.logger.debug(f"{response.status_code} {method} /{url} ")
 
         if response.status_code >= 300:
             raise Exception(json.dumps(response.json(), indent=2))
