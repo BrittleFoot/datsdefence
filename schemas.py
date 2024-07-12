@@ -1,4 +1,4 @@
-from schemas import BaseModel
+from pydantic import BaseModel
 
 
 class Base(BaseModel):  # Unit
