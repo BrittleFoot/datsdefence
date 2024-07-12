@@ -1,3 +1,5 @@
+from pprint import pprint
+
 from client import api_test
 
-print(api_test.rounds())
+pprint(api_test.rounds())

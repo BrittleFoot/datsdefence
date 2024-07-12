@@ -20,6 +20,10 @@ class ApiClient:
         logger_name = __name__ + "." + name
         self.logger = getLogger(logger_name)
 
+    ######################################
+    # Boilerplate code for requests
+    ######################################
+
     @wraps(requests.get)
     def get(self, url, **kwargs):
         """
@@ -71,6 +75,12 @@ class ApiClient:
 
         self.logger.info(f"{response.status_code} {response.request.method} {url} ")
         return response.json()
+
+    ######################################
+    ######################################
+    ######################################
+    ######################################
+    ######################################
 
     def rounds(self):
         return self.get("rounds/zombidef")
