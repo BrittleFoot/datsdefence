@@ -14,8 +14,8 @@ class World:
         self.raw_data = {}
 
     def update(self):
-        self.raw_data = Units.model_validate(self.client.units())
-        return self.raw_data["turn"], self.raw_data["turnEndsInMs"]
+        self.units = Units.model_validate(self.client.units())
+        return self.units.turn, self.units.turnEndsInMs
 
 
 class GameLoop:
