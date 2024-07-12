@@ -3,27 +3,25 @@ from pprint import pprint
 from client import api_test
 from test_igor import MyLoop
 
-command = {
-"attack": [
-],
-"build": [
-],
-}
-# pprint(api_test.rounds())
 
-
-# pprint(api_test.world())
-
-units = api_test.units()
-pprint(units)
-
-base_x = []
-base_y =[]
 # 151
 # 153
 # 158 148
 class NataLoop(MyLoop):
     def loop_body(self):
+        command = {
+            "attack": [
+            ],
+            "build": [
+            ],
+        }
+
+
+        units = api_test.units()
+        pprint(units)
+
+        base_x = []
+        base_y = []
 
         for base_block in units['base']:
             for zombie in units['zombies']:
@@ -72,6 +70,7 @@ class NataLoop(MyLoop):
                     )
 
         pprint(api_test.command(command))
+
 
 
 test_loop = NataLoop()
