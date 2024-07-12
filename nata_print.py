@@ -6,3 +6,5 @@ units = api_test.units()
 pprint(units['player'])
 print(f"блоков базы {len(units['base'])}")
 print(f"зомби в радиусе видимости {len(units['zombies'])}")
+print(f"враги в радиусе видимости {len(units['enemyBlocks'])}")
+
