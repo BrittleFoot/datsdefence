@@ -31,3 +31,9 @@ class Zombies(BaseModel):  # Unit
     waitTurns: int
     x: int
     y: int
+
+
+class Zpots(BaseModel):  # World
+    type: str
+    x: str
+    y: str
