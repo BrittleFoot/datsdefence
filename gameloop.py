@@ -2,6 +2,7 @@ import time
 from logging import getLogger
 
 from client import ApiClient
+from schemas import Units
 
 logger = getLogger(__name__)
 
@@ -13,7 +14,7 @@ class World:
         self.raw_data = {}
 
     def update(self):
-        self.raw_data = self.client.units()
+        self.raw_data = Units.model_validate(self.client.units())
         return self.raw_data["turn"], self.raw_data["turnEndsInMs"]
 
 
