@@ -145,9 +145,11 @@ class DrawWorld:
             return
         self.loadt = time.time()
 
-        snapshots = Path(self.file).read_text().strip().split("\n")
-
-        objects = list(map(json.loads, filter(bool, snapshots)))
+        if self.loop:
+            objects = self.loop.history
+        else:
+            snapshots = Path(self.file).read_text().strip().split("\n")
+            objects = list(map(json.loads, filter(bool, snapshots)))
 
         if not objects:
             self.empty = True

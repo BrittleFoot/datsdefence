@@ -3,7 +3,6 @@ from pprint import pprint
 
 import fire
 
-from client import ApiClient
 from gameloop import GameLoop
 
 
@@ -103,15 +102,15 @@ def zombie_rebalance_priority(tc):
     coords1, enemy, dstnc = tc
 
     if enemy.get("type", False) == "chaos_knight":
-        return 8 * enemy["health"] *dstnc
+        return 8 * enemy["health"] * dstnc
 
     if enemy.get("type", False) == "juggernaut":
-        return 4 * enemy["health"]*dstnc
+        return 4 * enemy["health"] * dstnc
 
     if enemy.get("type", False) == "liner":
-        return 1 * enemy["health"]*dstnc
+        return 1 * enemy["health"] * dstnc
 
-    return 20 * enemy["health"]*dstnc
+    return 20 * enemy["health"] * dstnc
 
 
 class IgorLoop(GameLoop):
@@ -139,13 +138,16 @@ class IgorLoop(GameLoop):
 
             if head_unit:
                 zombie_targets = [
-                ((ex, ey), enemy, get_distance(ex, ey, head_unit["x"], head_unit["y"], rng))
-                for (ex, ey), enemy in zombie_targets
-            ]
+                    (
+                        (ex, ey),
+                        enemy,
+                        get_distance(ex, ey, head_unit["x"], head_unit["y"], rng),
+                    )
+                    for (ex, ey), enemy in zombie_targets
+                ]
                 zombie_targets = sorted(zombie_targets, key=zombie_rebalance_priority)
                 zombie_targets = [
-                    (coord, enemy)
-                    for coord, enemy, distnc in zombie_targets
+                    (coord, enemy) for coord, enemy, distnc in zombie_targets
                 ]
 
             enemy_targets = list(self.enemies.items())
@@ -288,15 +290,15 @@ class IgorLoop(GameLoop):
 
 class CLI:
     def test(self):
-        try:
-            p = ApiClient("test").participate()
-            pprint(p)
-            return
+        # try:
+        #     p = ApiClient("test").participate()
+        #     pprint(p)
+        #     return
 
-        except Exception as e:
-            print(e)
-            if "NOT" in str(e):
-                return
+        # except Exception as e:
+        #     print(e)
+        #     if "NOT" in str(e):
+        #         return
 
         IgorLoop(is_test=True).just_run_already()
 

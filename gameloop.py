@@ -83,6 +83,7 @@ class GameLoop:
         self.once = once
         self.relpay = replay
         self.interactive = interactive
+        self.history = []
 
         self.client = ApiClient("test" if is_test else "prod")
 
@@ -135,27 +136,37 @@ class GameLoop:
             self.cleanup_replay()
             self.just_started = False
 
+        snap = {
+            "units": self.world.units,
+            "world": self.world.world,
+        }
+
         with open(self.replay_file(), "a") as f:
             print(
                 json.dumps(
-                    {
-                        "units": self.world.units,
-                        "world": self.world.world,
-                    },
+                    snap,
                     ensure_ascii=True,
                 ),
                 file=f,
             )
 
+        self.history.append(snap)
+
     def update_ui(self):
         time.sleep(self.turn_end_sleep_sec)
+        self.turn_end_sleep_sec = 0
 
     def _loop(self):
         try:
             while self.running:
+                at_least_one = False
                 while (
                     time.perf_counter() - self.turn_end_start < self.turn_end_sleep_sec
                 ):
+                    self.update_ui()
+                    at_least_one = True
+
+                if not at_least_one:
                     self.update_ui()
 
                 turn, turn_delta = self.world.update()
@@ -184,10 +195,13 @@ class GameLoop:
                     return
 
         except Exception as e:
+            print(e)
             raise e
         except KeyboardInterrupt:
+            print("KeyboardInterrupt")
             return
         finally:
+            print("running", self.running)
             self.stop()
 
     ###########################
