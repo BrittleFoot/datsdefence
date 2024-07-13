@@ -96,13 +96,12 @@ class IgorLoop(GameLoop):
     def get_attack_sequence(self):
         attacks = []
 
-        enemy_targets = list(self.enemies.items())
-        enemy_targets = sorted(enemy_targets, key=enemy_priority)
+
 
         zombie_targets = list(self.zombies.items())
         zombie_targets = sorted(zombie_targets, key=zombie_priority)
 
-        targets = enemy_targets + zombie_targets
+
 
 
         not_in_raduis =0
@@ -112,6 +111,12 @@ class IgorLoop(GameLoop):
             rng = 8 if is_head else 5
 
             bx, by = base["x"], base["y"]
+
+            enemy_targets = list(self.enemies.items())
+            enemy_targets = [ (ex, ey), enemy for (ex, ey), enemy in enemy_targets if is_in_radius(ex, ey, bx, by, rng) ]
+            enemy_targets = sorted(enemy_targets, key=enemy_priority)
+
+            targets = enemy_targets + zombie_targets
 
             for (ex, ey), enemy in targets:
                 if enemy["health"] <= 0:
