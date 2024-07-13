@@ -20,7 +20,7 @@ class World:
         self.replayf = None
 
         if replay:
-            self.replayf = open(replay, "r")
+            self.replayf = open(replay, "r", encoding="utf-8")
 
     def join_static(self, a, b):
         core = {
@@ -139,7 +139,7 @@ class GameLoop:
                         "units": self.world.units,
                         "world": self.world.world,
                     },
-                    ensure_ascii=False,
+                    ensure_ascii=True,
                 ),
                 file=f,
             )
