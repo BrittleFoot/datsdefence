@@ -85,6 +85,23 @@ class World:
         gl.glVertex2f(x, y - box_height)
         gl.glEnd()
 
+    def draw_line(self, color, start_x, start_y, end_x, end_y):
+        start_x = start_x / SCREEN[0] * 2 * self.scale - 1
+        start_y = start_y / SCREEN[1] * 2 * self.scale - 1
+        end_x = end_x / SCREEN[0] * 2 * self.scale - 1
+        end_y = end_y / SCREEN[1] * 2 * self.scale - 1
+
+        start_x += self.offsetX / 200
+        start_y += self.offsetY / 200
+        end_x += self.offsetX / 200
+        end_y += self.offsetY / 200
+
+        gl.glColor3f(*color)
+        gl.glBegin(gl.GL_LINES)
+        gl.glVertex2f(start_x, start_y)
+        gl.glVertex2f(end_x, end_y)
+        gl.glEnd()
+
     def get_wait(self):
         if self.empty:
             return 0.1
@@ -214,6 +231,10 @@ class World:
 
             x, y = e["x"], e["y"]
             self.draw(color, x, y)
+
+            if last := e.get("lastAttack"):
+                print(last)
+                self.draw_line(WHITE, x, y, last["x"], last["y"])
 
     def map(self):
         if self.empty:
