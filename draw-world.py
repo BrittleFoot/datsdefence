@@ -218,6 +218,9 @@ class World:
 
             self.draw(c, x, y)
 
+            if last := e.get("lastAttack"):
+                self.draw_line(WHITE, x, y, last["x"], last["y"])
+
     def map_walls(self):
         wrld = self.worlds.get(self.uturn["turn"])
 
@@ -231,10 +234,6 @@ class World:
 
             x, y = e["x"], e["y"]
             self.draw(color, x, y)
-
-            if last := e.get("lastAttack"):
-                print(last)
-                self.draw_line(WHITE, x, y, last["x"], last["y"])
 
     def map(self):
         if self.empty:
