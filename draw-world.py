@@ -162,10 +162,12 @@ class World:
             low = min(self.tmap.keys())
             high = max(self.tmap.keys())
             changed, self.tdrag = imgui.drag_int("Turn", self.tdrag, 1, low, high)
+            self.tdrag = min(max(low, self.tdrag), high)
             if changed:
                 self.realtime = self.tdrag == high
 
-            self.uturn = self.tmap[self.tdrag]
+            if self.tdrag in self.tmap:
+                self.uturn = self.tmap[self.tdrag]
 
             imgui.text_ansi(f"Turn: {self.uturn['turn']}")
 

@@ -121,6 +121,7 @@ class GameLoop:
             return
 
         replay = Path(self.replay_file())
+        print("Replay file:", replay)
         if replay.exists():
             replay.unlink()
             replay.touch()
