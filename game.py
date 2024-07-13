@@ -72,7 +72,7 @@ class IgorLoop(GameLoop):
 
             bx, by = base["x"], base["y"]
 
-            for (ex, ey), enemy in self.enemies:
+            for (ex, ey), enemy in self.enemies.items():
                 if enemy["health"] <= 0:
                     continue
 
@@ -85,12 +85,13 @@ class IgorLoop(GameLoop):
             if shoot:
                 continue
 
-            for (zx, zy), zombie in self.zombies:
+            print("zombies", self.zombies)
+            for (zx, zy), zombie in self.zombies.items():
                 if zombie["health"] <= 0:
                     continue
 
                 if is_in_radius(zx, zy, bx, by):
-                    attacks.append(attack(base["id"], ex, ey))
+                    attacks.append(attack(base["id"], zx, zy))
                     zombie["health"] -= dmg
                     shoot = True
                     break
@@ -103,30 +104,30 @@ class IgorLoop(GameLoop):
 
         self.player = units["player"]
 
-        self.bases = {(block["x"], block["y"]) for block in getarr(units, "base")}
-        self.zombies = {
-            (zombie["x"], zombie["y"]) for zombie in getarr(units, "zombies")
+        self.bases = {
+            (block["x"], block["y"]): block for block in getarr(units, "base")
         }
+        self.zombies = {
+            (zombie["x"], zombie["y"]): zombie for zombie in getarr(units, "zombies")
+        }
+
         self.enemies = {
-            (zombie["x"], zombie["y"]) for zombie in getarr(units, "enemyBlock")
+            (zombie["x"], zombie["y"]): zombie for zombie in getarr(units, "enemyBlock")
         }
 
         self.spawners = {
-            (wall["x"], wall["y"])
+            (wall["x"], wall["y"]): wall
             for wall in world.get("zpots", [])
             if wall["type"] == "default"
         }
         self.walls = {
-            (wall["x"], wall["y"])
+            (wall["x"], wall["y"]): wall
             for wall in world.get("zpots", [])
             if wall["type"] == "wall"
         }
 
     def get_build(self):
         commands = []
-
-        units = self.world.units
-        print("units", units)
 
         gold = self.player["gold"]
 
