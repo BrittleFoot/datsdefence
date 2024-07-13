@@ -244,6 +244,9 @@ class World:
             self.offsetY -= y / 2
             imgui.reset_mouse_drag_delta(imgui.BUTTON_MOUSE_BUTTON_RIGHT)
 
+        if imgui.is_mouse_clicked(imgui.BUTTON_MOUSE_BUTTON_LEFT):
+            print("Mouse clicked")
+
     def map_collection(self, name, color):
         for e in ga(self.uturn, name):
             c = color
