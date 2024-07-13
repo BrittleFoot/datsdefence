@@ -38,6 +38,16 @@ def build(x, y):
     }
 
 
+def attack(blockId, x, y):
+    return {
+        "blockId": blockId,
+        "target": {
+            "x": x,
+            "y": y,
+        },
+    }
+
+
 def getarr(dict, key):
     v = dict.get(key, [])
     if v is None:
@@ -45,14 +55,45 @@ def getarr(dict, key):
     return v
 
 
+PW_HEAD = 40
+PW_BODY = 10
+
+
 class IgorLoop(GameLoop):
     def get_attack_sequence(self):
         attacks = []
         units = self.world.units
 
-        for base in self.bases:
-            for enemy in self.enemies:
-                pass
+        for (bx, by), base in self.bases.items():
+            is_head = base.get("isHead", False)
+            dmg = PW_HEAD if is_head else PW_BODY
+
+            shoot = False
+
+            bx, by = base["x"], base["y"]
+
+            for (ex, ey), enemy in self.enemies:
+                if enemy["health"] <= 0:
+                    continue
+
+                if is_in_radius(ex, ey, bx, by):
+                    attacks.append(attack(base["id"], ex, ey))
+                    enemy["health"] -= dmg
+                    shoot = True
+                    break
+
+            if shoot:
+                continue
+
+            for (zx, zy), zombie in self.zombies:
+                if enemy["health"] <= 0:
+                    continue
+
+                if is_in_radius(zx, zy, bx, by):
+                    attacks.append(attack(base["id"], ex, ey))
+                    enemy["health"] -= dmg
+                    shoot = True
+                    break
 
         return attacks
 
