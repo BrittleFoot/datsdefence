@@ -50,68 +50,9 @@ class IgorLoop(GameLoop):
         attacks = []
         units = self.world.units
 
-        for base_block in getarr(units, "base"):
-            for enemyBlock in getarr(units, "enemyBlocks"):
-                isHead = base_block.get("isHead", False)
-
-                if enemyBlock["health"] < 40 and isHead:
-                    continue
-
-                if (
-                    is_in_radius(
-                        enemyBlock["x"],
-                        enemyBlock["y"],
-                        base_block["x"],
-                        base_block["y"],
-                        isHead,
-                    )
-                    and enemyBlock["health"] > 0
-                ):
-                    attacks.append(
-                        {
-                            "blockId": base_block["id"],
-                            "target": {
-                                "x": enemyBlock["x"],
-                                "y": enemyBlock["y"],
-                            },
-                        }
-                    )
-                    if isHead:
-                        enemyBlock["health"] = enemyBlock["health"] - 40
-                    else:
-                        enemyBlock["health"] = enemyBlock["health"] - 10
-                    break
-
-            for zombie in getarr(units, "zombies"):
-                isHead = base_block.get("isHead", False)
-
-                if zombie["health"] < 40 and isHead:
-                    continue
-
-                if (
-                    is_in_radius(
-                        zombie["x"],
-                        zombie["y"],
-                        base_block["x"],
-                        base_block["y"],
-                        isHead,
-                    )
-                    and zombie["health"] > 0
-                ):
-                    attacks.append(
-                        {
-                            "blockId": base_block["id"],
-                            "target": {
-                                "x": zombie["x"],
-                                "y": zombie["y"],
-                            },
-                        }
-                    )
-                    if isHead:
-                        zombie["health"] = zombie["health"] - 40
-                    else:
-                        zombie["health"] = zombie["health"] - 10
-                    break
+        for base in self.bases:
+            for enemy in self.enemies:
+                pass
 
         return attacks
 

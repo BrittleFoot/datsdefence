@@ -5,7 +5,7 @@ from gameloop import GameLoop
 
 class RecordLoop(GameLoop):
     def loop_body(self):
-        pprint(self.units["player"])
+        pprint(self.world.units["player"])
         print(f"Recording turn {self.turn}")
 
 
