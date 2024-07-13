@@ -75,7 +75,10 @@ def enemy_priority(tc):
     if t.get("isHead", False):
         return 0
 
-    return distance/t["health"]
+    if t["health"] > 0:
+        return distance/t["health"]
+
+    return 100
 
 
 def zombie_priority(tc):
