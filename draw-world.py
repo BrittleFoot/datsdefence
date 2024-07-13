@@ -233,7 +233,7 @@ class World:
             self.draw(color, x, y)
 
     def draw_attacks(self):
-        for e in ga(self.uturn, "enemyBlock"):
+        for e in ga(self.uturn, "enemyBlocks"):
             if last := e.get("lastAttack"):
                 x, y = e["x"], e["y"]
                 self.draw_line(ENEMY, x, y, last["x"], last["y"])
