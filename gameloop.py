@@ -97,6 +97,8 @@ class GameLoop:
                 lambda x: "This is a replay, sending nothing to server"
             )
 
+        self.move_head = None
+
     def _start(self):
         self.running = True
         self.start()

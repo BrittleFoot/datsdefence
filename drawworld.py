@@ -10,6 +10,8 @@ import OpenGL.GL as gl
 import pygame
 from imgui.integrations.pygame import PygameRenderer
 
+from gameloop import GameLoop
+
 SCREEN = (800, 800)
 
 # Define colors (R, G, B)
@@ -68,7 +70,7 @@ def window(name):
 
 
 class DrawWorld:
-    def __init__(self, file):
+    def __init__(self, file, loop: GameLoop = None):
         # Initialize Pygame
         self.file = file
         pygame.init()
@@ -87,6 +89,8 @@ class DrawWorld:
 
         self.loadt = 0
         self.empty = True
+
+        self.loop = loop
 
     def box(self, x, y):
         x = x * BOX_SIZE / SCREEN[0] * 2 * self.scale - 1
@@ -246,7 +250,11 @@ class DrawWorld:
             imgui.reset_mouse_drag_delta(imgui.BUTTON_MOUSE_BUTTON_RIGHT)
 
         if imgui.is_mouse_clicked(imgui.BUTTON_MOUSE_BUTTON_LEFT):
-            print("Mouse clicked")
+            if self.loop:
+                self.loop.move_head = {
+                    "x": self.hover_base[0],
+                    "y": self.hover_base[1],
+                }
 
     def map_collection(self, name, color):
         for e in ga(self.uturn, name):
@@ -353,6 +361,8 @@ class DrawWorld:
         self.exit()
 
     def exit(self):
+        if self.loop:
+            self.loop.running = False
         self.impl.shutdown()
         pygame.quit()
         sys.exit()

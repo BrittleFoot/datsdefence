@@ -133,9 +133,6 @@ class IgorLoop(GameLoop):
                 if is_in_radius(ex, ey, bx, by, rng):
                     attacks.append(attack(base["id"], ex, ey))
                     enemy["health"] -= dmg
-                    print(
-                        f"{bx}, {by} :Attacking {ex}, {ey} with enemy={'lastAttack' in enemy}"
-                    )
                     break
                 else:
                     not_in_raduis += 1
@@ -237,7 +234,9 @@ class IgorLoop(GameLoop):
         self.ui = DrawWorld(self.relpay)
 
     def update_ui(self):
-        return self.ui.step()
+        if self.ui.realtime:
+            self.ui.tdrag = self.world.units["turn"]
+        self.ui.step()
 
     def stop(self):
         self.ui.exit()
@@ -254,7 +253,27 @@ class IgorLoop(GameLoop):
         }
 
         print(">>>>>>>>>")
-        pprint(commands)
+        if self.move_head:
+            commands["moveBase"] = self.move_head
+            self.move_head = None
+
+        print(" BUILDS:", len(commands.get("build", [])))
+        print("ATTACKS:", len(commands.get("attack", [])))
+
+        if "moveBase" in commands:
+            print(f"Moving base to {commands['moveBase']}!!!!!!")
+            print(f"Moving base to {commands['moveBase']}!!!!!!")
+            print(f"Moving base to {commands['moveBase']}!!!!!!")
+            print(f"Moving base to {commands['moveBase']}!!!!!!")
+            print(f"Moving base to {commands['moveBase']}!!!!!!")
+            print(f"Moving base to {commands['moveBase']}!!!!!!")
+            print(f"Moving base to {commands['moveBase']}!!!!!!")
+            print(f"Moving base to {commands['moveBase']}!!!!!!")
+            print(f"Moving base to {commands['moveBase']}!!!!!!")
+            print(f"Moving base to {commands['moveBase']}!!!!!!")
+            print(f"Moving base to {commands['moveBase']}!!!!!!")
+            print(f"Moving base to {commands['moveBase']}!!!!!!")
+            print(f"Moving base to {commands['moveBase']}!!!!!!")
 
         print("<<<<<<<<<")
         pprint(self.client.command(commands))
