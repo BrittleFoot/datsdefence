@@ -87,6 +87,7 @@ class GameLoop:
         self.client = ApiClient("test" if is_test else "prod")
 
         self.turn_end_sleep_sec = 0
+        self.turn_end_start = 0
         self.turn = 0
 
         self.world = World(self.client, replay)
@@ -144,10 +145,16 @@ class GameLoop:
                 file=f,
             )
 
+    def update_ui(self):
+        time.sleep(self.turn_end_sleep_sec)
+
     def _loop(self):
         try:
             while self.running:
-                time.sleep(self.turn_end_sleep_sec)
+                while (
+                    time.perf_counter() - self.turn_end_start < self.turn_end_sleep_sec
+                ):
+                    self.update_ui()
 
                 turn, turn_delta = self.world.update()
                 if turn <= self.turn:
@@ -155,6 +162,7 @@ class GameLoop:
                     continue
                 self.turn = turn
 
+                self.turn_end_start = time.perf_counter()
                 self.turn_end_sleep_sec = turn_delta / 1000
                 if self.relpay:
                     # Speed up replay

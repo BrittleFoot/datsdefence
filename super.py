@@ -236,6 +236,12 @@ class IgorLoop(GameLoop):
     def start(self):
         self.ui = DrawWorld(self.relpay)
 
+    def update_ui(self):
+        return self.ui.step()
+
+    def stop(self):
+        self.ui.exit()
+
     def loop_body(self):
         self.parse_map()
 
