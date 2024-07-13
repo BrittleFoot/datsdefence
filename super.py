@@ -120,9 +120,17 @@ class IgorLoop(GameLoop):
         attacks = []
 
         zombie_targets = list(self.zombies.items())
-        zombie_targets = sorted(zombie_targets, key=zombie_priority)
 
         head_unit = self.head
+        zombie_targets = [
+            (
+                (ex, ey),
+                enemy,
+                get_distance(ex, ey, head_unit["x"], head_unit["y"], 1),
+            )
+            for (ex, ey), enemy in zombie_targets
+        ]
+        zombie_targets = sorted(zombie_targets, key=zombie_rebalance_priority)
 
         not_in_raduis = 0
         for (bx, by), base in self.bases.items():
@@ -132,20 +140,6 @@ class IgorLoop(GameLoop):
 
             bx, by = base["x"], base["y"]
 
-            if head_unit:
-                zombie_targets = [
-                    (
-                        (ex, ey),
-                        enemy,
-                        get_distance(ex, ey, head_unit["x"], head_unit["y"], rng),
-                    )
-                    for (ex, ey), enemy in zombie_targets
-                ]
-                zombie_targets = sorted(zombie_targets, key=zombie_rebalance_priority)
-                zombie_targets = [
-                    (coord, enemy) for coord, enemy, distnc in zombie_targets
-                ]
-
             enemy_targets = list(self.enemies.items())
             enemy_targets = [
                 ((ex, ey), enemy, get_distance(ex, ey, bx, by, rng))
@@ -153,11 +147,11 @@ class IgorLoop(GameLoop):
                 if is_in_radius(ex, ey, bx, by, rng)
             ]
             enemy_targets = sorted(enemy_targets, key=enemy_priority, reverse=True)
-            enemy_targets = [(coord, enemy) for coord, enemy, distnc in enemy_targets]
+
 
             targets = enemy_targets + zombie_targets
 
-            for (ex, ey), enemy in targets:
+            for (ex, ey), enemy, usless_const in targets:
                 if enemy["health"] <= 0:
                     continue
 
