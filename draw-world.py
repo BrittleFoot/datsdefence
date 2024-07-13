@@ -261,7 +261,6 @@ class World:
                         self.offsetY = -b * 200
                         self.rquest_base_center = False
                         self.hover_base = (0, 0)
-                        print(self.head)
                         if self.head:
                             self.hover_base = (self.head["x"], self.head["y"])
 
