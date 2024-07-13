@@ -130,7 +130,7 @@ class IgorLoop(GameLoop):
             enemy_targets = [
                 ((ex, ey), enemy, get_distance(ex, ey, bx, by, rng))
                 for (ex, ey), enemy in enemy_targets
-                if is_in_radius(ex, ey, bx, by, rng)
+                if enemy["health"] > 0 and is_in_radius(ex, ey, bx, by, rng)
             ]
             enemy_targets = sorted(enemy_targets, key=enemy_priority, reverse=True)
 

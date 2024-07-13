@@ -201,6 +201,7 @@ class DrawWorld:
         self.realtime = True
         self.rquest_base_center = True
         self.head = None
+        self.show_attacks = True
 
         self.hover_base = (0, 0)
 
@@ -218,6 +219,9 @@ class DrawWorld:
                 self.rquest_base_center = True
 
             imgui.text_ansi(f"Move base: {self.hover_base}")
+
+            if imgui.button("Toggle attacks"):
+                self.show_attacks = not self.show_attacks
 
         with window("Timers"):
             for k in self.timers:
@@ -320,7 +324,8 @@ class DrawWorld:
         self.map_collection("enemyBlocks", ENEMY)
         self.map_collection("zombies", ZOMBIE)
 
-        # self.draw_attacks()
+        if self.show_attacks:
+            self.draw_attacks()
 
         self.draw(WHITE, *self.hover_base)
 
