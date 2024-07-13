@@ -10,6 +10,10 @@ def is_in_radius(tx, ty, x, y, radius):
     return math.sqrt((tx - x) ** 2 + (ty - y) ** 2) <= radius
 
 
+def distance(x1, y1, x2, y2):
+    return math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
+
+
 def cross(x, y):
     yield x - 1, y
     yield x, y - 1
@@ -100,6 +104,11 @@ class IgorLoop(GameLoop):
         self.bases = {
             (block["x"], block["y"]): block for block in getarr(units, "base")
         }
+
+        for base in self.bases.values():
+            if base.get("isHead"):
+                self.head = base
+
         self.zombies = {
             (zombie["x"], zombie["y"]): zombie for zombie in getarr(units, "zombies")
         }
@@ -147,7 +156,11 @@ class IgorLoop(GameLoop):
             invalid.add((x, y))
             invalid |= set(cross(x, y))
 
-        for x0, y0 in self.bases:
+        bases = list(self.bases.keys())
+        headx, heady = self.head["x"], self.head["y"]
+        bases = sorted(bases, key=lambda x: distance(x[0], x[1], headx, heady))
+
+        for x0, y0 in bases:
             if gold == 0:
                 break
 
