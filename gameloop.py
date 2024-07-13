@@ -154,7 +154,6 @@ class GameLoop:
 
     def update_ui(self):
         time.sleep(self.turn_end_sleep_sec)
-        self.turn_end_sleep_sec = 0
 
     def _loop(self):
         try:

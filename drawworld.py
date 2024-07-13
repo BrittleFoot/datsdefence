@@ -315,7 +315,7 @@ class DrawWorld:
         self.map_collection("enemyBlocks", ENEMY)
         self.map_collection("zombies", ZOMBIE)
 
-        self.draw_attacks()
+        # self.draw_attacks()
 
         self.draw(WHITE, *self.hover_base)
 
