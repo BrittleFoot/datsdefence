@@ -4,6 +4,7 @@ from pprint import pprint
 import fire
 
 from client import ApiClient
+from drawworld import DrawWorld
 from gameloop import GameLoop
 
 
@@ -231,6 +232,9 @@ class IgorLoop(GameLoop):
                     break
 
         return commands
+
+    def start(self):
+        self.ui = DrawWorld(self.relpay)
 
     def loop_body(self):
         self.parse_map()

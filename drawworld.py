@@ -67,7 +67,7 @@ def window(name):
         imgui.end()
 
 
-class World:
+class DrawWorld:
     def __init__(self, file):
         # Initialize Pygame
         self.file = file
@@ -358,7 +358,7 @@ class World:
 
 
 def draw_world(file: str):
-    World(file).run()
+    DrawWorld(file).run()
 
 
 if __name__ == "__main__":
