@@ -255,7 +255,9 @@ class IgorLoop(GameLoop):
         self.ui.exit()
 
     def loop_body(self):
+        t = time.perf_counter()
         self.parse_map()
+        self.ui.timers["parse_map"] = time.perf_counter() - t
 
         t = time.perf_counter()
         build_commands = self.get_build()
@@ -301,6 +303,19 @@ class CLI:
                 return
 
         IgorLoop(is_test=True).just_run_already()
+
+    def prod(self):
+        try:
+            p = ApiClient("prod").participate()
+            pprint(p)
+            return
+
+        except Exception as e:
+            if "NOT" in str(e):
+                print(e)
+                return
+
+        IgorLoop(is_test=False).just_run_already()
 
     def replay(self, file: str, interactive: bool = False):
         IgorLoop(is_test=True, replay=file, interactive=interactive).just_run_already()

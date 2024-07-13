@@ -23,7 +23,7 @@ BASE_HEAD = (0.0, 0.4, 1.0)
 BASE_ATTACK = (0.2, 0.6, 1.0)
 
 ENEMY = (1.0, 0.0, 0.0)
-ENEMY_HEAD = (1.0, 0.4, 0.0)
+ENEMY_HEAD = (1.0, 0.2, 0.1)
 ENEMY_ATTACK = (1.0, 0.6, 0.2)
 
 ZOMBIE = (0.0, 1.0, 0.0)
@@ -252,7 +252,9 @@ class DrawWorld:
             s2 = SCREEN[1] / 2
             nx, ny = x - s2, y - s2
 
-            self.hover_base = round(hx + nx / 5 - 2), round(hy - ny / 5 + 2)
+            nx += -self.offsetX * 2
+            ny += self.offsetY * 2
+            self.hover_base = round(hx + nx / 5 + 25), round(hy - ny / 5 - 40)
 
         if imgui.is_mouse_dragging(imgui.BUTTON_MOUSE_BUTTON_RIGHT):
             x, y = imgui.get_mouse_drag_delta(imgui.BUTTON_MOUSE_BUTTON_RIGHT)
@@ -327,7 +329,10 @@ class DrawWorld:
         if self.show_attacks:
             self.draw_attacks()
 
-        self.draw(WHITE, *self.hover_base)
+        x, y = self.hover_base
+        self.draw(WHITE, x, y)
+        self.draw(ENEMY, x - 2, y)
+        self.draw((0.0, 0.0, 1.0), x + 2, y)
 
     def step(self):
         # Handle events
