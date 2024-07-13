@@ -1,6 +1,7 @@
 import json
 import time
 from logging import getLogger
+from os import environ, path
 
 from client import ApiClient
 
@@ -97,11 +98,14 @@ class GameLoop:
 
     def dump_world(self):
         realm = self.world.units.get("realmName", "")
-        name = f"log-{realm}.log"
-        if self.relpay:
-            name = "replay-" + name
+        uname = environ.get("USER", "denchec")
+        name = f"{uname}-{realm}.ljson"
 
-        with open(name, "a") as f:
+        full = path.join("data", name)
+        if self.relpay:
+            full = path.join("data", "replays", name)
+
+        with open(full, "a") as f:
             print(
                 json.dumps(
                     {"units": self.world.units, "world": self.world.world},

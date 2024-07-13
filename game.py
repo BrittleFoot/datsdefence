@@ -1,6 +1,8 @@
 import math
 from pprint import pprint
 
+import fire
+
 from gameloop import GameLoop
 
 
@@ -197,4 +199,13 @@ class IgorLoop(GameLoop):
         print("=========")
 
 
-IgorLoop(is_test=True, replay="out2.log").just_run_already()
+class CLI:
+    def main(self):
+        IgorLoop(is_test=True).just_run_already()
+
+    def replay(self, file: str):
+        IgorLoop(is_test=True, replay=file).just_run_already()
+
+
+if __name__ == "__main__":
+    fire.Fire(CLI())
