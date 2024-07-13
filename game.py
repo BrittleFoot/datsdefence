@@ -59,6 +59,12 @@ PW_HEAD = 40
 PW_BODY = 10
 
 
+def priority(tc):
+    coords1, t = tc
+
+    return t["health"]
+
+
 class IgorLoop(GameLoop):
     def get_attack_sequence(self):
         attacks = []
@@ -68,31 +74,18 @@ class IgorLoop(GameLoop):
             dmg = PW_HEAD if is_head else PW_BODY
             rng = 8 if is_head else 5
 
-            shoot = False
-
             bx, by = base["x"], base["y"]
 
-            for (ex, ey), enemy in self.enemies.items():
+            targets = list(self.enemies.items()) + list(self.zombies.items())
+            targets = sorted(targets, key=priority)
+
+            for (ex, ey), enemy in targets:
                 if enemy["health"] <= 0:
                     continue
 
                 if is_in_radius(ex, ey, bx, by, rng):
                     attacks.append(attack(base["id"], ex, ey))
                     enemy["health"] -= dmg
-                    shoot = True
-                    break
-
-            if shoot:
-                continue
-
-            for (zx, zy), zombie in self.zombies.items():
-                if zombie["health"] <= 0:
-                    continue
-
-                if is_in_radius(zx, zy, bx, by, rng):
-                    attacks.append(attack(base["id"], zx, zy))
-                    zombie["health"] -= dmg
-                    shoot = True
                     break
 
         return attacks
@@ -159,7 +152,6 @@ class IgorLoop(GameLoop):
 
             for x, y in cross(x0, y0):
                 if (x, y) in invalid or (x, y) in built:
-                    print("skip", x, y)
                     continue
 
                 commands.append(build(x, y))
