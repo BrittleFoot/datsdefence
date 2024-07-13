@@ -84,6 +84,7 @@ class IgorLoop(GameLoop):
                 if is_in_radius(ex, ey, bx, by, rng):
                     attacks.append(attack(base["id"], ex, ey))
                     enemy["health"] -= dmg
+                    break
 
         return attacks
 
