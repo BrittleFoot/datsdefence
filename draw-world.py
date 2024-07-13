@@ -319,33 +319,39 @@ class World:
 
                     self.draw(WHITE, x, y)
 
+    def step(self):
+        # Handle events
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.running = False
+            self.impl.process_event(event)
+        self.impl.process_inputs()
+
+        imgui.new_frame()
+
+        # Clear the screen
+        gl.glClearColor(*BLACK, 1)
+        gl.glClear(gl.GL_COLOR_BUFFER_BIT)
+
+        self.load()
+        # Draw the MAP
+        self.map()
+        # Render the UI
+        self.ui()
+
+        imgui.render()
+        self.impl.render(imgui.get_draw_data())
+        pygame.display.flip()
+
     def run(self):
         # Main loop
-        running = True
-        while running:
-            # Handle events
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    running = False
-                self.impl.process_event(event)
-            self.impl.process_inputs()
+        self.running = True
+        while self.running:
+            self.step()
 
-            imgui.new_frame()
+        self.exit()
 
-            # Clear the screen
-            gl.glClearColor(*BLACK, 1)
-            gl.glClear(gl.GL_COLOR_BUFFER_BIT)
-
-            self.load()
-            # Draw the MAP
-            self.map()
-            # Render the UI
-            self.ui()
-
-            imgui.render()
-            self.impl.render(imgui.get_draw_data())
-            pygame.display.flip()
-
+    def exit(self):
         self.impl.shutdown()
         pygame.quit()
         sys.exit()
