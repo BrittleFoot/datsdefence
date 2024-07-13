@@ -32,6 +32,28 @@ WALL = (1.0, 1.0, 1.0)
 BOX_SIZE = 1
 
 
+def opaque(color, health):
+    a, b, c = color
+
+    if color == BASE:
+        proc = health / 100
+        return a * proc, b * proc, c * proc
+
+    if color == ENEMY:
+        proc = health / 100
+        return a * proc, b * proc, c * proc
+
+    if color == BASE_HEAD:
+        proc = health / 300
+        return a * proc, b * proc, c * proc
+
+    if color == ENEMY_HEAD:
+        proc = health / 300
+        return a * proc, b * proc, c * proc
+
+    return color
+
+
 def ga(arr, key):
     return arr.get(key) or []
 
@@ -218,7 +240,7 @@ class World:
                         self.offsetY = -b * 200
                         self.rquest_base_center = False
 
-            self.draw(c, x, y)
+            self.draw(opaque(c, e.get("health", 0)), x, y)
 
     def map_walls(self):
         wrld = self.worlds.get(self.uturn["turn"])
