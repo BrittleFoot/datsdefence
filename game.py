@@ -3,6 +3,7 @@ from pprint import pprint
 
 import fire
 
+from client import ApiClient
 from gameloop import GameLoop
 
 
@@ -253,6 +254,16 @@ class IgorLoop(GameLoop):
 
 class CLI:
     def test(self):
+        try:
+            p = ApiClient("test").participate()
+            pprint(p)
+            return
+
+        except Exception as e:
+            print(e)
+            if "NOT" in str(e):
+                return
+
         IgorLoop(is_test=True).just_run_already()
 
     def replay(self, file: str, interactive: bool = False):
