@@ -84,6 +84,9 @@ class IgorLoop(GameLoop):
                 if is_in_radius(ex, ey, bx, by, rng):
                     attacks.append(attack(base["id"], ex, ey))
                     enemy["health"] -= dmg
+                    print(
+                        f"{bx}, {by} :Attacking {ex}, {ey} with enemy={'lastAttack' in enemy}"
+                    )
                     break
 
         return attacks
