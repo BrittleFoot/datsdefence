@@ -73,6 +73,7 @@ class DrawWorld:
     def __init__(self, file, loop: GameLoop = None):
         # Initialize Pygame
         self.file = file
+        self.timers = {}
         pygame.init()
         pygame.display.set_caption("ZOMBIEE")
         self.screen = pygame.display.set_mode(
@@ -218,6 +219,10 @@ class DrawWorld:
 
             imgui.text_ansi(f"Move base: {self.hover_base}")
 
+        with window("Timers"):
+            for k in self.timers:
+                imgui.text_ansi(f"Timer {k}: {self.timers.get(k, 0):.3f}")
+
         with window("Turns"):
             low = min(self.tmap.keys())
             high = max(self.tmap.keys())
@@ -315,20 +320,9 @@ class DrawWorld:
         self.map_collection("enemyBlocks", ENEMY)
         self.map_collection("zombies", ZOMBIE)
 
-        self.draw_attacks()
+        # self.draw_attacks()
 
         self.draw(WHITE, *self.hover_base)
-
-        if not self.head:
-            return
-
-        if False:
-            for x in range(400, 500):
-                for y in range(300, 400):
-                    if ((x + y * 2) % 5) == 0:
-                        continue
-
-                    self.draw(WHITE, x, y)
 
     def step(self):
         # Handle events

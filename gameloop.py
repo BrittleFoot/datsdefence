@@ -154,7 +154,6 @@ class GameLoop:
 
     def update_ui(self):
         time.sleep(self.turn_end_sleep_sec)
-        self.turn_end_sleep_sec = 0
 
     def _loop(self):
         try:
@@ -187,7 +186,9 @@ class GameLoop:
                 self.dump_world()
                 #
                 ##
+                t = time.perf_counter()
                 self.loop_body()
+                self.ui.timers["loop body"] = time.perf_counter() - t
                 ##
                 #
 
