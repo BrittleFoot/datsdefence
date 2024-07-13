@@ -218,9 +218,6 @@ class World:
 
             self.draw(c, x, y)
 
-            if last := e.get("lastAttack"):
-                self.draw_line(WHITE, x, y, last["x"], last["y"])
-
     def map_walls(self):
         wrld = self.worlds.get(self.uturn["turn"])
 
@@ -235,6 +232,17 @@ class World:
             x, y = e["x"], e["y"]
             self.draw(color, x, y)
 
+    def draw_attacks(self):
+        for e in ga(self.uturn, "enemyBlock"):
+            if last := e.get("lastAttack"):
+                x, y = e["x"], e["y"]
+                self.draw_line(ENEMY, x, y, last["x"], last["y"])
+
+        for e in ga(self.uturn, "base"):
+            if last := e.get("lastAttack"):
+                x, y = e["x"], e["y"]
+                self.draw_line(BASE, x, y, last["x"], last["y"])
+
     def map(self):
         if self.empty:
             return
@@ -243,6 +251,8 @@ class World:
         self.map_collection("base", BASE)
         self.map_collection("enemyBlocks", ENEMY)
         self.map_collection("zombies", ZOMBIE)
+
+        self.draw_attacks()
 
     def run(self):
         # Main loop
