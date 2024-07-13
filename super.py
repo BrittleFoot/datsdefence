@@ -231,14 +231,17 @@ class IgorLoop(GameLoop):
         return commands
 
     def start(self):
-        self.ui = DrawWorld(self.relpay)
+        self.ui = DrawWorld(self.relpay, self)
 
     def update_ui(self):
-        if self.ui.realtime:
+        if self.ui.realtime and self.relpay:
             self.ui.tdrag = self.world.units["turn"]
+
+        self.ui.file = self.replay_file()
         self.ui.step()
 
     def stop(self):
+        print("stop")
         self.ui.exit()
 
     def loop_body(self):
@@ -261,22 +264,11 @@ class IgorLoop(GameLoop):
         print("ATTACKS:", len(commands.get("attack", [])))
 
         if "moveBase" in commands:
-            print(f"Moving base to {commands['moveBase']}!!!!!!")
-            print(f"Moving base to {commands['moveBase']}!!!!!!")
-            print(f"Moving base to {commands['moveBase']}!!!!!!")
-            print(f"Moving base to {commands['moveBase']}!!!!!!")
-            print(f"Moving base to {commands['moveBase']}!!!!!!")
-            print(f"Moving base to {commands['moveBase']}!!!!!!")
-            print(f"Moving base to {commands['moveBase']}!!!!!!")
-            print(f"Moving base to {commands['moveBase']}!!!!!!")
-            print(f"Moving base to {commands['moveBase']}!!!!!!")
-            print(f"Moving base to {commands['moveBase']}!!!!!!")
-            print(f"Moving base to {commands['moveBase']}!!!!!!")
-            print(f"Moving base to {commands['moveBase']}!!!!!!")
-            print(f"Moving base to {commands['moveBase']}!!!!!!")
+            print(f"Moving base to {commands['moveBase']}!!")
 
         print("<<<<<<<<<")
-        pprint(self.client.command(commands))
+        execured = self.client.command(commands)
+        print("ERRORS:", len(execured.get("errors", [])))
 
         print("=========")
 
