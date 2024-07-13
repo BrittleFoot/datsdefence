@@ -96,12 +96,35 @@ def zombie_priority(tc):
     return 10 * enemy["health"]
 
 
+def zombie_rebalance_priority(tc):
+    coords1, enemy, dstnc = tc
+
+    if enemy.get("type", False) == "chaos_knight":
+        return 8 * enemy["health"] *dstnc
+
+    if enemy.get("type", False) == "juggernaut":
+        return 4 * enemy["health"]*dstnc
+
+    if enemy.get("type", False) == "liner":
+        return 1 * enemy["health"]*dstnc
+
+    return 20 * enemy["health"]*dstnc
+
+
 class IgorLoop(GameLoop):
     def get_attack_sequence(self):
         attacks = []
 
         zombie_targets = list(self.zombies.items())
         zombie_targets = sorted(zombie_targets, key=zombie_priority)
+        head_unit = None
+
+        for (bx, by), base in self.bases.items():
+            is_head = base.get("isHead", False)
+
+            if is_head:
+                head_unit = base
+                break
 
         not_in_raduis = 0
         for (bx, by), base in self.bases.items():
@@ -110,6 +133,17 @@ class IgorLoop(GameLoop):
             rng = 8 if is_head else 5
 
             bx, by = base["x"], base["y"]
+
+            if head_unit:
+                zombie_targets = [
+                ((ex, ey), enemy, get_distance(ex, ey, head_unit["x"], head_unit["y"], rng))
+                for (ex, ey), enemy in zombie_targets
+            ]
+                zombie_targets = sorted(zombie_targets, key=zombie_rebalance_priority)
+                zombie_targets = [
+                    (coord, enemy)
+                    for coord, enemy, distnc in zombie_targets
+                ]
 
             enemy_targets = list(self.enemies.items())
             enemy_targets = [
