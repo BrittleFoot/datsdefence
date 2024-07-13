@@ -134,7 +134,11 @@ class GameLoop:
         with open(self.replay_file(), "a") as f:
             print(
                 json.dumps(
-                    {"units": self.world.units, "world": self.world.world},
+                    {
+                        "units": self.world.units,
+                        "world": self.world.world,
+                    },
+                    ensure_ascii=False,
                 ),
                 file=f,
             )

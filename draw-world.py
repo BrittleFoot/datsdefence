@@ -1,6 +1,7 @@
 import json
 import sys
 import time
+from contextlib import contextmanager
 from pathlib import Path
 
 import fire
@@ -31,6 +32,15 @@ BOX_SIZE = 1
 
 def ga(arr, key):
     return arr.get(key) or []
+
+
+@contextmanager
+def window(name):
+    imgui.begin(name)
+    try:
+        yield
+    finally:
+        imgui.end()
 
 
 class World:
@@ -137,35 +147,32 @@ class World:
 
     def ui(self):
         if self.empty:
-            imgui.begin("Config")
-            imgui.text_ansi(f"Empty, waiting for data in {self.file}")
-            imgui.end()
+            with window("Config"):
+                imgui.text_ansi(f"Empty, waiting for data in {self.file}")
             return
 
-        imgui.begin("Config")
-        chngd, self.scale = imgui.drag_float("Scale", self.scale, 0.1, 0.1, 10)
-        imgui.text_ansi(f"Offset {self.offsetX}, {self.offsetY}")
+        with window("Config"):
+            chngd, self.scale = imgui.drag_float("Scale", self.scale, 0.1, 0.1, 10)
+            imgui.text_ansi(f"Offset {self.offsetX}, {self.offsetY}")
 
-        if imgui.button("Center Base") or chngd:
-            self.rquest_base_center = True
+            if imgui.button("Center Base") or chngd:
+                self.rquest_base_center = True
 
-        imgui.end()
+        with window("Turns"):
+            low = min(self.tmap.keys())
+            high = max(self.tmap.keys())
+            changed, self.tdrag = imgui.drag_int("Turn", self.tdrag, 1, low, high)
+            if changed:
+                self.realtime = self.tdrag == high
 
-        imgui.begin("Turns", True)
+            self.uturn = self.tmap[self.tdrag]
 
-        low = min(self.tmap.keys())
-        high = max(self.tmap.keys())
-        changed, self.tdrag = imgui.drag_int("Turn", self.tdrag, 1, low, high)
-        if changed:
-            self.realtime = self.tdrag == high
+            imgui.text_ansi(f"Turn: {self.uturn['turn']}")
 
-        self.uturn = self.tmap[self.tdrag]
+            _, self.realtime = imgui.checkbox("Realtime", self.realtime)
 
-        imgui.text_ansi(f"Turn: {self.uturn['turn']}")
-
-        _, self.realtime = imgui.checkbox("Realtime", self.realtime)
-
-        imgui.end()
+        with window("Stats"):
+            imgui.text_ansi(f"{json.dumps(self.uturn['player'], indent=2)}")
 
         if imgui.is_mouse_dragging(imgui.BUTTON_MOUSE_BUTTON_RIGHT):
             x, y = imgui.get_mouse_drag_delta(imgui.BUTTON_MOUSE_BUTTON_RIGHT)
