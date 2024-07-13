@@ -66,6 +66,7 @@ def priority(tc):
 
     return t["health"]
 
+
 def enemy_priority(tc):
     coords1, t = tc
 
@@ -76,35 +77,28 @@ def enemy_priority(tc):
 
 
 def zombie_priority(tc):
-    coords1, t = tc
+    coords1, enemy = tc
 
-    if t.get("type", False)== "chaos_knight":
-        return 2*t["health"]
+    if enemy.get("type", False) == "chaos_knight":
+        return 2 * enemy["health"]
 
-    if t.get("type", False)== "juggernaut":
-        return 4*t["health"]
+    if enemy.get("type", False) == "juggernaut":
+        return 4 * enemy["health"]
 
-    if t.get("type", False)== "liner":
-        return 6*t["health"]
+    if enemy.get("type", False) == "liner":
+        return 6 * enemy["health"]
 
-
-
-    return 10*t["health"]
+    return 10 * enemy["health"]
 
 
 class IgorLoop(GameLoop):
     def get_attack_sequence(self):
         attacks = []
 
-
-
         zombie_targets = list(self.zombies.items())
         zombie_targets = sorted(zombie_targets, key=zombie_priority)
 
-
-
-
-        not_in_raduis =0
+        not_in_raduis = 0
         for (bx, by), base in self.bases.items():
             is_head = base.get("isHead", False)
             dmg = PW_HEAD if is_head else PW_BODY
@@ -113,7 +107,11 @@ class IgorLoop(GameLoop):
             bx, by = base["x"], base["y"]
 
             enemy_targets = list(self.enemies.items())
-            enemy_targets = [ (ex, ey), enemy for (ex, ey), enemy in enemy_targets if is_in_radius(ex, ey, bx, by, rng) ]
+            enemy_targets = [
+                ((ex, ey), enemy)
+                for (ex, ey), enemy in enemy_targets
+                if is_in_radius(ex, ey, bx, by, rng)
+            ]
             enemy_targets = sorted(enemy_targets, key=enemy_priority)
 
             targets = enemy_targets + zombie_targets
@@ -130,13 +128,13 @@ class IgorLoop(GameLoop):
                     )
                     break
                 else:
-                    not_in_raduis+=1
+                    not_in_raduis += 1
 
         print(
-                        f"base blocks {len(self.bases.items())} :Attacks {len(attacks)} \n"
-                        f"enemy count {len(self.enemies.items())}  zombie count {len(self.zombies.items())}\n"
-                        f"not_in_raduis {not_in_raduis}"
-                    )
+            f"base blocks {len(self.bases.items())} :Attacks {len(attacks)} \n"
+            f"enemy count {len(self.enemies.items())}  zombie count {len(self.zombies.items())}\n"
+            f"not_in_raduis {not_in_raduis}"
+        )
         return attacks
 
     def parse_map(self):
