@@ -86,12 +86,12 @@ class IgorLoop(GameLoop):
                 continue
 
             for (zx, zy), zombie in self.zombies:
-                if enemy["health"] <= 0:
+                if zombie["health"] <= 0:
                     continue
 
                 if is_in_radius(zx, zy, bx, by):
                     attacks.append(attack(base["id"], ex, ey))
-                    enemy["health"] -= dmg
+                    zombie["health"] -= dmg
                     shoot = True
                     break
 
