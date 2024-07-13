@@ -174,6 +174,13 @@ class World:
             self.tdrag = low
             self.uturn = self.tmap[low]
 
+        if self.uturn and self.head is None:
+            for e in ga(self.uturn, "base"):
+                if e.get("isHead", False):
+                    head = e
+                    break
+            self.head = head
+
         self.empty = False
 
     def init_ui(self):
@@ -185,6 +192,7 @@ class World:
         self.offsetY = 0
         self.realtime = True
         self.rquest_base_center = True
+        self.head = None
 
         self.hover_base = (0, 0)
 
@@ -221,9 +229,14 @@ class World:
         with window("Stats"):
             imgui.text_ansi(f"{json.dumps(self.uturn['player'], indent=2)}")
 
-        x, y = imgui.get_mouse_drag_delta(imgui.BUTTON_MOUSE_BUTTON_LEFT)
-        imgui.reset_mouse_drag_delta(imgui.BUTTON_MOUSE_BUTTON_LEFT)
-        self.hover_base = x, y
+        if self.head:
+            x, y = imgui.get_mouse_pos()
+            hx, hy = self.head["x"], self.head["y"]
+
+            s2 = SCREEN[1] / 2
+            nx, ny = x - s2, y - s2
+
+            self.hover_base = round(hx + nx / 5 - 2), round(hy - ny / 5 + 2)
 
         if imgui.is_mouse_dragging(imgui.BUTTON_MOUSE_BUTTON_RIGHT):
             x, y = imgui.get_mouse_drag_delta(imgui.BUTTON_MOUSE_BUTTON_RIGHT)
@@ -247,6 +260,10 @@ class World:
                         self.offsetX = -a * 200
                         self.offsetY = -b * 200
                         self.rquest_base_center = False
+                        self.hover_base = (0, 0)
+                        print(self.head)
+                        if self.head:
+                            self.hover_base = (self.head["x"], self.head["y"])
 
             self.draw(opaque(c, e.get("health", 0)), x, y)
 
@@ -287,7 +304,7 @@ class World:
 
         self.draw_attacks()
 
-        self.draw(BASE, *self.hover_base)
+        self.draw(WHITE, *self.hover_base)
 
     def run(self):
         # Main loop
