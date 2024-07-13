@@ -3,6 +3,7 @@ import sys
 import time
 from pathlib import Path
 
+import fire
 import imgui
 import OpenGL.GL as gl
 import pygame
@@ -51,6 +52,7 @@ class World:
         self.init_ui()
 
         self.loadt = 0
+        self.empty = True
 
     def draw(self, color, x, y):
         x = x * BOX_SIZE / SCREEN[0] * 2 * self.scale - 1 + self.offsetX / 200
@@ -66,14 +68,32 @@ class World:
         gl.glVertex2f(x, y - box_height)
         gl.glEnd()
 
+    def get_wait(self):
+        if self.empty:
+            return 0.1
+
+        if self.file.startswith("replay"):
+            return 0.1
+
+        return 2
+
     def load(self):
-        if time.time() - self.loadt < 2:
+        wait = self.get_wait()
+        if time.time() - self.loadt < wait:
             return
         self.loadt = time.time()
 
-        self.turns = list(
-            map(json.loads, filter(bool, Path(self.file).read_text().split("\n")))
-        )
+        snapshots = Path(self.file).read_text().strip().split("\n")
+
+        objects = list(map(json.loads, filter(bool, snapshots)))
+
+        if not objects:
+            self.empty = True
+            return
+
+        self.worlds = {o["units"]["turn"]: o.get("world") for o in objects}
+        self.turns = [o["units"] for o in objects]
+
         self.turns = sorted(self.turns, key=lambda x: x["turn"])
         self.tmap = {t["turn"]: t for t in self.turns}
 
@@ -96,6 +116,8 @@ class World:
             self.tdrag = low
             self.uturn = self.tmap[low]
 
+        self.empty = False
+
     def init_ui(self):
         self.uturn = None
         self.scale = 5
@@ -103,9 +125,15 @@ class World:
         self.turn_id = None
         self.offsetX = 150
         self.offsetY = -150
-        self.realtime = False
+        self.realtime = True
 
     def ui(self):
+        if self.empty:
+            imgui.begin("Config")
+            imgui.text_ansi(f"Empty, waiting for data in {self.file}")
+            imgui.end()
+            return
+
         imgui.begin("Config")
         _, self.scale = imgui.drag_float("Scale", self.scale, 0.1, 0.1, 10)
         imgui.text_ansi(f"Offset {self.offsetX}, {self.offsetY}")
@@ -149,6 +177,9 @@ class World:
             self.draw(c, e["x"], e["y"])
 
     def map(self):
+        if self.empty:
+            return
+
         self.map_collection("base", BASE)
         self.map_collection("enemyBlocks", ENEMY)
         self.map_collection("zombies", ZOMBIE)
@@ -187,4 +218,9 @@ class World:
         sys.exit()
 
 
-World("out2.ljson").run()
+def draw_world(file: str):
+    World(file).run()
+
+
+if __name__ == "__main__":
+    fire.Fire(draw_world)

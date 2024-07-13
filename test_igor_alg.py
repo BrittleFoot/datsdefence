@@ -197,4 +197,4 @@ class IgorLoop(GameLoop):
         print("=========")
 
 
-IgorLoop(is_test=True, once=True, test=True).just_run_already()
+IgorLoop(is_test=True, replay="out2.log").just_run_already()

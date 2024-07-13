@@ -3,15 +3,16 @@ import re
 
 dig = re.compile(r"^\d+")
 
-with open("info1.log", "r") as f, open("out2.log", "w") as out:
+with open("info.log", "r") as f, open("out.log", "w") as out:
     buffer = []
 
     for line in f:
         if buffer:
             buffer.append(line)
             if "}" == line.rstrip():
-                print("".join(buffer))
-                print(json.dumps(json.loads("".join(buffer))), file=out)
+                j = json.loads("".join(buffer))
+                j = {"units": j}
+                print(json.dumps(j), file=out)
                 buffer = []
             continue
 

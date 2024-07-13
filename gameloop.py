@@ -8,64 +8,83 @@ logger = getLogger(__name__)
 
 
 class World:
-    def __init__(self, client: ApiClient, test):
-        self.test = test
+    def __init__(self, client: ApiClient, replay):
         self.client = client
-        self._static = {}
-        self.update_static()
+        self._static_cache = {}
+        self.world = {}
         self.units = {}
 
-    def update_static(self):
-        if self.test:
-            self.world = {
-                "zpots": [],
-                "realmName": "Test Realm",
-            }
-            return
+        self.replay = replay
+        self.replayf = None
 
-        static = self.client.world()
-        for zpot in static["zpots"]:
-            key = (zpot["x"], zpot["y"])
+        if replay:
+            self.replayf = open(replay, "r")
 
-            if key in self._static:
-                continue
-
-            self._static[(zpot["x"], zpot["y"])] = zpot
-
-        self.world = {
-            "zpots": list(self._static.values()),
-            "realmName": static["realmName"],
+    def join_static(self, a, b):
+        core = {
+            "realmName": a.get("realmName") or b.get("realmName"),
+            "zpots": [z for z in a.get("zpots", [])],
         }
 
-    def update(self):
-        if self.test:
-            with open("test.json", "r") as f:
-                self.units = json.load(f)
-        else:
-            self.units = self.client.units()
+        for zpot in b.get("zpots", []):
+            key = (zpot["x"], zpot["y"])
 
-        self.units = self.units
-        self.update_static()
+            if key in self._static_cache:
+                continue
+
+            self._static_cache[(zpot["x"], zpot["y"])] = zpot
+            core["zpots"].append(zpot)
+
+        return core
+
+    def update(self):
+        func = self.next_real
+        if self.replay:
+            func = self.next_replay
+
+        self.units, self.world = func()
 
         return self.units["turn"], self.units["turnEndsInMs"]
+
+    def next_real(self):
+        units = self.client.units()
+        world = self.client.world()
+        world = self.join_static(self.world, world)
+
+        return units, world
+
+    def next_replay(self):
+        nxt = self.replayf.readline()
+        if not nxt:
+            raise StopIteration("End of replay")
+
+        snap = json.loads(nxt)
+
+        replay_units, replay_world = snap["units"], snap.get("world", {})
+        replay_world = self.join_static(self.world, replay_world)
+
+        return replay_units, replay_world
 
 
 class GameLoop:
     """Наследуемся переопределяем loop"""
 
-    def __init__(self, is_test=True, once=False, test=False):
+    def __init__(self, is_test=True, once=False, replay: str = None):
         self.running = False
         self.once = once
+        self.relpay = replay
+
         self.client = ApiClient("test" if is_test else "prod")
 
         self.turn_end_sleep_sec = 0
         self.turn = 0
 
-        self.world = World(self.client, test)
+        self.world = World(self.client, replay)
 
-        self.test = test
-        if test:
-            self.client.command = lambda x: "Its test, sending nothing to server"
+        if replay:
+            self.client.command = (
+                lambda x: "This is a replay, sending nothing to server"
+            )
 
     def _start(self):
         self.running = True
@@ -77,13 +96,18 @@ class GameLoop:
         self.stop()
 
     def dump_world(self):
-        if self.test:
-            return
         realm = self.world.units.get("realmName", "")
-        with open(f"info-units-{realm}.log", "a") as f:
-            print(json.dumps(self.world.units), file=f)
-        with open(f"info-world-{realm}.log", "a") as f:
-            print(json.dumps(self.world.world), file=f)
+        name = f"log-{realm}.log"
+        if self.relpay:
+            name = "replay-" + name
+
+        with open(name, "a") as f:
+            print(
+                json.dumps(
+                    {"units": self.world.units, "world": self.world.world},
+                ),
+                file=f,
+            )
 
     def _loop(self):
         try:
@@ -97,6 +121,9 @@ class GameLoop:
                 self.turn = turn
 
                 self.turn_end_sleep_sec = turn_delta / 1000
+                if self.relpay:
+                    # Speed up replay
+                    self.turn_end_sleep_sec /= 10
 
                 self.dump_world()
                 #
