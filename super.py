@@ -1,4 +1,5 @@
 import math
+import time
 from pprint import pprint
 
 import fire
@@ -85,21 +86,6 @@ def enemy_priority(tc):
     return 100
 
 
-def zombie_priority(tc):
-    coords1, enemy = tc
-
-    if enemy.get("type", False) == "chaos_knight":
-        return 4 * enemy["health"]
-
-    if enemy.get("type", False) == "juggernaut":
-        return 2 * enemy["health"]
-
-    if enemy.get("type", False) == "liner":
-        return 0 * enemy["health"]
-
-    return 10 * enemy["health"]
-
-
 def zombie_rebalance_priority(tc):
     coords1, enemy, dstnc = tc
 
@@ -147,7 +133,6 @@ class IgorLoop(GameLoop):
                 if is_in_radius(ex, ey, bx, by, rng)
             ]
             enemy_targets = sorted(enemy_targets, key=enemy_priority, reverse=True)
-
 
             targets = enemy_targets + zombie_targets
 
@@ -272,8 +257,13 @@ class IgorLoop(GameLoop):
     def loop_body(self):
         self.parse_map()
 
+        t = time.perf_counter()
         build_commands = self.get_build()
+        self.ui.timers["build"] = time.perf_counter() - t
+        #
+        t = time.perf_counter()
         attack_commands = self.get_attack_sequence()
+        self.ui.timers["attack"] = time.perf_counter() - t
 
         commands = {
             "build": build_commands,
