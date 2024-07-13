@@ -14,12 +14,16 @@ SCREEN = (1324, 1068)
 WHITE = (1.0, 1.0, 1.0)
 BLACK = (0.0, 0.0, 0.0)
 
-BASE = (0.735, 0.735, 0.735)
+BASE = (0.0, 1.0, 1.0)
+BASE_HEAD = (0.0, 0.4, 1.0)
 
 ENEMY = (1.0, 0.0, 0.0)
+ENEMY_HEAD = (1.0, 0.4, 0.0)
+
 ZOMBIE = (0.0, 1.0, 0.0)
-SPAWNER = (0.0, 0.0, 1.0)
-WALL = WHITE
+SPAWNER = (1.0, 1.0, 0.0)
+
+WALL = (1.0, 0.0, 1.0)
 
 BOX_SIZE = 1
 
@@ -94,11 +98,11 @@ class World:
 
     def init_ui(self):
         self.uturn = None
-        self.scale = 4
+        self.scale = 5
         self.tdrag = None
         self.turn_id = None
-        self.offsetX = 0
-        self.offsetY = 0
+        self.offsetX = 150
+        self.offsetY = -150
         self.realtime = False
 
     def ui(self):
@@ -135,11 +139,16 @@ class World:
 
     def map_collection(self, name, color):
         for e in ga(self.uturn, name):
-            self.draw(color, e["x"], e["y"])
+            c = color
+            if e.get("isHead", False):
+                if color == ENEMY:
+                    c = ENEMY_HEAD
+                elif color == BASE:
+                    c = BASE_HEAD
+
+            self.draw(c, e["x"], e["y"])
 
     def map(self):
-        units = self.uturn
-
         self.map_collection("base", BASE)
         self.map_collection("enemyBlocks", ENEMY)
         self.map_collection("zombies", ZOMBIE)
