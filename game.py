@@ -6,10 +6,8 @@ import fire
 from gameloop import GameLoop
 
 
-def is_in_radius(zombie_x, zombie_y, center_x, center_y, radius):
-    return math.sqrt(abs(zombie_x - center_x)) + math.sqrt(
-        abs(zombie_y - center_y)
-    ) <= math.sqrt(radius)
+def is_in_radius(tx, ty, x, y, radius):
+    return math.sqrt((tx - x) ** 2 + (ty - y) ** 2) <= radius
 
 
 def cross(x, y):
@@ -69,15 +67,15 @@ class IgorLoop(GameLoop):
     def get_attack_sequence(self):
         attacks = []
 
+        targets = list(self.enemies.items()) + list(self.zombies.items())
+        targets = sorted(targets, key=priority)
+
         for (bx, by), base in self.bases.items():
             is_head = base.get("isHead", False)
             dmg = PW_HEAD if is_head else PW_BODY
             rng = 8 if is_head else 5
 
             bx, by = base["x"], base["y"]
-
-            targets = list(self.enemies.items()) + list(self.zombies.items())
-            targets = sorted(targets, key=priority)
 
             for (ex, ey), enemy in targets:
                 if enemy["health"] <= 0:
@@ -86,7 +84,6 @@ class IgorLoop(GameLoop):
                 if is_in_radius(ex, ey, bx, by, rng):
                     attacks.append(attack(base["id"], ex, ey))
                     enemy["health"] -= dmg
-                    break
 
         return attacks
 
