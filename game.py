@@ -115,55 +115,63 @@ class IgorLoop(GameLoop):
 
         return attacks
 
-    def get_build(self):
-        commands = []
-
+    def parse_map(self):
         units = self.world.units
         world = self.world.world
 
-        gold = units["player"]["gold"]
+        self.player = units["player"]
 
-        bases = {(block["x"], block["y"]) for block in getarr(units, "base")}
-        zombies = {(zombie["x"], zombie["y"]) for zombie in getarr(units, "zombies")}
-        enemy = {(zombie["x"], zombie["y"]) for zombie in getarr(units, "enemyBlock")}
+        self.bases = {(block["x"], block["y"]) for block in getarr(units, "base")}
+        self.zombies = {
+            (zombie["x"], zombie["y"]) for zombie in getarr(units, "zombies")
+        }
+        self.enemies = {
+            (zombie["x"], zombie["y"]) for zombie in getarr(units, "enemyBlock")
+        }
 
-        spawner = {
+        self.spawners = {
             (wall["x"], wall["y"])
             for wall in world.get("zpots", [])
             if wall["type"] == "default"
         }
-        walls = {
+        self.walls = {
             (wall["x"], wall["y"])
             for wall in world.get("zpots", [])
             if wall["type"] == "wall"
         }
 
+    def get_build(self):
+        commands = []
+
+        units = self.world.units
+        print("units", units)
+
+        gold = self.player["gold"]
+
         built = set()
         invalid = set()
 
-        for e in bases:
+        for e in self.bases:
             invalid.add(e)
 
-        for x, y in zombies:
+        for x, y in self.zombies:
             invalid.add((x, y))
 
-        for x, y in enemy:
+        for x, y in self.enemies:
             invalid.add((x, y))
             invalid |= set(circle(x, y))
 
         # This two following blocks could be not working
 
-        for x, y in spawner:
+        for x, y in self.spawners:
             invalid.add((x, y))
             invalid |= set(cross(x, y))
 
-        for x, y in walls:
+        for x, y in self.walls:
             invalid.add((x, y))
             invalid |= set(cross(x, y))
 
-        print("invalid", invalid)
-
-        for x0, y0 in bases:
+        for x0, y0 in self.bases:
             if gold == 0:
                 break
 
@@ -182,6 +190,8 @@ class IgorLoop(GameLoop):
         return commands
 
     def loop_body(self):
+        self.parse_map()
+
         build_commands = self.get_build()
         attack_commands = self.get_attack_sequence()
 
