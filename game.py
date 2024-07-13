@@ -62,14 +62,46 @@ def priority(tc):
 
     return t["health"]
 
+def enemy_priority(tc):
+    coords1, t = tc
+
+    if t.get("isHead", False):
+        return 0
+
+    return t["health"]
+
+
+def zombie_priority(tc):
+    coords1, t = tc
+
+    if t.get("type", False)== "chaos_knight":
+        return 2*t["health"]
+
+    if t.get("type", False)== "juggernaut":
+        return 4*t["health"]
+
+    if t.get("type", False)== "liner":
+        return 6*t["health"]
+
+
+
+    return 10*t["health"]
+
 
 class IgorLoop(GameLoop):
     def get_attack_sequence(self):
         attacks = []
 
-        targets = list(self.enemies.items()) + list(self.zombies.items())
-        targets = sorted(targets, key=priority)
+        enemy_targets = list(self.enemies.items())
+        enemy_targets = sorted(enemy_targets, key=enemy_priority)
 
+        zombie_targets = list(self.zombies.items())
+        zombie_targets = sorted(zombie_targets, key=zombie_priority)
+
+        targets = enemy_targets + zombie_targets
+
+
+        not_in_raduis =0
         for (bx, by), base in self.bases.items():
             is_head = base.get("isHead", False)
             dmg = PW_HEAD if is_head else PW_BODY
@@ -88,7 +120,14 @@ class IgorLoop(GameLoop):
                         f"{bx}, {by} :Attacking {ex}, {ey} with enemy={'lastAttack' in enemy}"
                     )
                     break
+                else:
+                    not_in_raduis+=1
 
+        print(
+                        f"base blocks {len(self.bases.items())} :Attacks {len(attacks)} \n"
+                        f"enemy count {len(self.enemies.items())}  zombie count {len(self.zombies.items())}\n"
+                        f"not_in_raduis {not_in_raduis}"
+                    )
         return attacks
 
     def parse_map(self):
