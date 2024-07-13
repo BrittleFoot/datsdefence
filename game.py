@@ -9,6 +9,8 @@ from gameloop import GameLoop
 def is_in_radius(tx, ty, x, y, radius):
     return math.sqrt((tx - x) ** 2 + (ty - y) ** 2) <= radius
 
+def get_distance(tx, ty, x, y, radius):
+    return math.sqrt((tx - x) ** 2 + (ty - y) ** 2)
 
 def distance(x1, y1, x2, y2):
     return math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
@@ -68,12 +70,12 @@ def priority(tc):
 
 
 def enemy_priority(tc):
-    coords1, t = tc
+    coords1, t, distance = tc
 
     if t.get("isHead", False):
         return 0
 
-    return t["health"]
+    return distance/t["health"]
 
 
 def zombie_priority(tc):
@@ -108,11 +110,15 @@ class IgorLoop(GameLoop):
 
             enemy_targets = list(self.enemies.items())
             enemy_targets = [
-                ((ex, ey), enemy)
+                ((ex, ey), enemy, get_distance(ex, ey, bx, by, rng))
                 for (ex, ey), enemy in enemy_targets
                 if is_in_radius(ex, ey, bx, by, rng)
             ]
-            enemy_targets = sorted(enemy_targets, key=enemy_priority)
+            enemy_targets = sorted(enemy_targets, key=enemy_priority, reverse=True)
+            enemy_targets = [
+                (coord, enemy)
+                for coord, enemy, distnc in enemy_targets
+            ]
 
             targets = enemy_targets + zombie_targets
 
@@ -156,7 +162,7 @@ class IgorLoop(GameLoop):
         }
 
         self.enemies = {
-            (zombie["x"], zombie["y"]): zombie for zombie in getarr(units, "enemyBlock")
+            (zombie["x"], zombie["y"]): zombie for zombie in getarr(units, "enemyBlocks")
         }
 
         self.spawners = {
