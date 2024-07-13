@@ -67,6 +67,7 @@ class IgorLoop(GameLoop):
         for (bx, by), base in self.bases.items():
             is_head = base.get("isHead", False)
             dmg = PW_HEAD if is_head else PW_BODY
+            rng = 8 if is_head else 5
 
             shoot = False
 
@@ -76,7 +77,7 @@ class IgorLoop(GameLoop):
                 if enemy["health"] <= 0:
                     continue
 
-                if is_in_radius(ex, ey, bx, by):
+                if is_in_radius(ex, ey, bx, by, rng):
                     attacks.append(attack(base["id"], ex, ey))
                     enemy["health"] -= dmg
                     shoot = True
@@ -90,7 +91,7 @@ class IgorLoop(GameLoop):
                 if zombie["health"] <= 0:
                     continue
 
-                if is_in_radius(zx, zy, bx, by):
+                if is_in_radius(zx, zy, bx, by, rng):
                     attacks.append(attack(base["id"], zx, zy))
                     zombie["health"] -= dmg
                     shoot = True
