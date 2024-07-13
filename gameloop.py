@@ -15,6 +15,7 @@ class World:
         self._static_cache = {}
         self.world = {}
         self.units = {}
+        self.head = None
 
         self.replay = replay
         self.replayf = None
@@ -180,7 +181,7 @@ class GameLoop:
                 self.turn_end_sleep_sec = turn_delta / 1000
                 if self.relpay:
                     # Speed up replay
-                    self.turn_end_sleep_sec /= 100
+                    self.turn_end_sleep_sec /= 10
                     if self.interactive:
                         self.turn_end_sleep_sec = 0
                         input(f"Turn: {self.turn}. Press Enter to continue...")

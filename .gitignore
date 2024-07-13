@@ -167,3 +167,5 @@ imgui.ini
 
 data/replays/*
 !data/replays/README.md
+
+*.ljson

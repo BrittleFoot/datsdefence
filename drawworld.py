@@ -202,6 +202,9 @@ class DrawWorld:
         self.rquest_base_center = True
         self.head = None
         self.show_attacks = True
+        #
+        self.adjustX = 0
+        self.adjustY = 0
 
         self.hover_base = (0, 0)
 
@@ -220,8 +223,13 @@ class DrawWorld:
 
             imgui.text_ansi(f"Move base: {self.hover_base}")
 
-            if imgui.button("Toggle attacks"):
-                self.show_attacks = not self.show_attacks
+            if imgui.button("Enable attacks"):
+                self.show_attacks = True
+            if imgui.button("Disable attacks"):
+                self.show_attacks = False
+
+            ch, self.adjustX = imgui.drag_int("Adjust X", self.adjustX, 1, -100, 100)
+            ch, self.adjustY = imgui.drag_int("Adjust Y", self.adjustY, 1, -100, 100)
 
         with window("Timers"):
             for k in self.timers:
@@ -243,10 +251,14 @@ class DrawWorld:
             _, self.realtime = imgui.checkbox("Realtime", self.realtime)
 
         with window("Stats"):
+            if self.loop and self.loop.head:
+                imgui.text_ansi(f"Head health: {self.loop.head['health']}")
             imgui.text_ansi(f"{json.dumps(self.uturn['player'], indent=2)}")
 
         if self.head:
             x, y = imgui.get_mouse_pos()
+            x = x + self.adjustX
+            y = y + self.adjustY
             hx, hy = self.head["x"], self.head["y"]
 
             s2 = SCREEN[1] / 2
