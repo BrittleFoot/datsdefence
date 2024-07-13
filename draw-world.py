@@ -9,7 +9,7 @@ import OpenGL.GL as gl
 import pygame
 from imgui.integrations.pygame import PygameRenderer
 
-SCREEN = (1324, 1068)
+SCREEN = (800, 800)
 
 # Define colors (R, G, B)
 WHITE = (1.0, 1.0, 1.0)
@@ -54,11 +54,18 @@ class World:
         self.loadt = 0
         self.empty = True
 
-    def draw(self, color, x, y):
-        x = x * BOX_SIZE / SCREEN[0] * 2 * self.scale - 1 + self.offsetX / 200
-        y = y * BOX_SIZE / SCREEN[1] * 2 * self.scale - 1 + self.offsetY / 200
+    def box(self, x, y):
+        x = x * BOX_SIZE / SCREEN[0] * 2 * self.scale - 1
+        y = y * BOX_SIZE / SCREEN[1] * 2 * self.scale - 1
         box_width = BOX_SIZE / SCREEN[0] * self.scale * 2
         box_height = BOX_SIZE / SCREEN[1] * self.scale * 2
+
+        return x, y, box_width, box_height
+
+    def draw(self, color, x, y):
+        x, y, box_width, box_height = self.box(x, y)
+        x += self.offsetX / 200
+        y += self.offsetY / 200
 
         gl.glColor3f(*color)
         gl.glBegin(gl.GL_QUADS)
@@ -72,7 +79,7 @@ class World:
         if self.empty:
             return 0.1
 
-        if self.file.startswith("replay"):
+        if "replays/" in self.file:
             return 0.1
 
         return 2
@@ -123,9 +130,10 @@ class World:
         self.scale = 5
         self.tdrag = None
         self.turn_id = None
-        self.offsetX = 150
-        self.offsetY = -150
+        self.offsetX = 0
+        self.offsetY = 0
         self.realtime = True
+        self.rquest_base_center = True
 
     def ui(self):
         if self.empty:
@@ -135,11 +143,11 @@ class World:
             return
 
         imgui.begin("Config")
-        _, self.scale = imgui.drag_float("Scale", self.scale, 0.1, 0.1, 10)
+        chngd, self.scale = imgui.drag_float("Scale", self.scale, 0.1, 0.1, 10)
         imgui.text_ansi(f"Offset {self.offsetX}, {self.offsetY}")
-        if imgui.button("Reset Offset"):
-            self.offsetX = 0
-            self.offsetY = 0
+
+        if imgui.button("Center Base") or chngd:
+            self.rquest_base_center = True
 
         imgui.end()
 
@@ -161,20 +169,28 @@ class World:
 
         if imgui.is_mouse_dragging(imgui.BUTTON_MOUSE_BUTTON_RIGHT):
             x, y = imgui.get_mouse_drag_delta(imgui.BUTTON_MOUSE_BUTTON_RIGHT)
-            self.offsetX += x
-            self.offsetY -= y
+            self.offsetX += x / 2
+            self.offsetY -= y / 2
             imgui.reset_mouse_drag_delta(imgui.BUTTON_MOUSE_BUTTON_RIGHT)
 
     def map_collection(self, name, color):
         for e in ga(self.uturn, name):
             c = color
+            x, y = e["x"], e["y"]
             if e.get("isHead", False):
                 if color == ENEMY:
                     c = ENEMY_HEAD
+
                 elif color == BASE:
                     c = BASE_HEAD
 
-            self.draw(c, e["x"], e["y"])
+                    if self.rquest_base_center:
+                        a, b, _, _ = self.box(x, y)
+                        self.offsetX = -a * 200
+                        self.offsetY = -b * 200
+                        self.rquest_base_center = False
+
+            self.draw(c, x, y)
 
     def map(self):
         if self.empty:

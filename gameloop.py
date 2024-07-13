@@ -2,6 +2,7 @@ import json
 import time
 from logging import getLogger
 from os import environ, path
+from pathlib import Path
 
 from client import ApiClient
 
@@ -77,6 +78,7 @@ class GameLoop:
         replay: str = None,
         interactive=False,
     ):
+        self.just_started = True
         self.running = False
         self.once = once
         self.relpay = replay
@@ -114,7 +116,21 @@ class GameLoop:
 
         return full
 
+    def cleanup_replay(self):
+        if not self.relpay:
+            return
+
+        replay = Path(self.replay_file())
+        if replay.exists():
+            replay.unlink()
+            replay.touch()
+            print("Replay file cleaned")
+
     def dump_world(self):
+        if self.just_started:
+            self.cleanup_replay()
+            self.just_started = False
+
         with open(self.replay_file(), "a") as f:
             print(
                 json.dumps(
