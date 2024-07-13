@@ -261,7 +261,6 @@ class World:
                         self.offsetY = -b * 200
                         self.rquest_base_center = False
                         self.hover_base = (0, 0)
-                        print(self.head)
                         if self.head:
                             self.hover_base = (self.head["x"], self.head["y"])
 
@@ -305,6 +304,17 @@ class World:
         self.draw_attacks()
 
         self.draw(WHITE, *self.hover_base)
+
+        if not self.head:
+            return
+
+        if False:
+            for x in range(400, 500):
+                for y in range(300, 400):
+                    if ((x + y * 2) % 5) == 0:
+                        continue
+
+                    self.draw(WHITE, x, y)
 
     def run(self):
         # Main loop

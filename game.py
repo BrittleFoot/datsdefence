@@ -9,8 +9,10 @@ from gameloop import GameLoop
 def is_in_radius(tx, ty, x, y, radius):
     return math.sqrt((tx - x) ** 2 + (ty - y) ** 2) <= radius
 
+
 def get_distance(tx, ty, x, y, radius):
     return math.sqrt((tx - x) ** 2 + (ty - y) ** 2)
+
 
 def distance(x1, y1, x2, y2):
     return math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
@@ -76,7 +78,7 @@ def enemy_priority(tc):
         return 0
 
     if t["health"] > 0:
-        return distance/t["health"]
+        return distance / t["health"]
 
     return 100
 
@@ -118,10 +120,7 @@ class IgorLoop(GameLoop):
                 if is_in_radius(ex, ey, bx, by, rng)
             ]
             enemy_targets = sorted(enemy_targets, key=enemy_priority, reverse=True)
-            enemy_targets = [
-                (coord, enemy)
-                for coord, enemy, distnc in enemy_targets
-            ]
+            enemy_targets = [(coord, enemy) for coord, enemy, distnc in enemy_targets]
 
             targets = enemy_targets + zombie_targets
 
@@ -165,7 +164,8 @@ class IgorLoop(GameLoop):
         }
 
         self.enemies = {
-            (zombie["x"], zombie["y"]): zombie for zombie in getarr(units, "enemyBlocks")
+            (zombie["x"], zombie["y"]): zombie
+            for zombie in getarr(units, "enemyBlocks")
         }
 
         self.spawners = {
@@ -217,6 +217,9 @@ class IgorLoop(GameLoop):
 
             for x, y in cross(x0, y0):
                 if (x, y) in invalid or (x, y) in built:
+                    continue
+
+                if ((x + y * 2) % 5) == 0:
                     continue
 
                 commands.append(build(x, y))
