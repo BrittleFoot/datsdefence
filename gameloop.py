@@ -186,7 +186,9 @@ class GameLoop:
                 self.dump_world()
                 #
                 ##
+                t = time.perf_counter()
                 self.loop_body()
+                self.ui.timers["loop body"] = time.perf_counter() - t
                 ##
                 #
 

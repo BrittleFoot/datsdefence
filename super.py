@@ -273,7 +273,6 @@ class IgorLoop(GameLoop):
 
     def stop(self):
         print("stop")
-        raise Exception("stop")
         self.ui.exit()
 
     def loop_body(self):
