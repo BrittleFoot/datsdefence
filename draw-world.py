@@ -201,15 +201,28 @@ class World:
 
             self.draw(c, x, y)
 
+    def map_walls(self):
+        wrld = self.worlds.get(self.uturn["turn"])
+
+        if not wrld:
+            return
+
+        for e in ga(wrld, "zpots"):
+            color = SPAWNER
+            if e["type"] == "wall":
+                color = WALL
+
+            x, y = e["x"], e["y"]
+            self.draw(color, x, y)
+
     def map(self):
         if self.empty:
             return
 
+        self.map_walls()
         self.map_collection("base", BASE)
         self.map_collection("enemyBlocks", ENEMY)
         self.map_collection("zombies", ZOMBIE)
-        # self.map_collection("spawners", SPAWNER)
-        # self.map_collection("walls", WALL)
 
     def run(self):
         # Main loop

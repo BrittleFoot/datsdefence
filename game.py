@@ -6,7 +6,7 @@ import fire
 from gameloop import GameLoop
 
 
-def is_in_radius(zombie_x, zombie_y, center_x, center_y, radius=5):
+def is_in_radius(zombie_x, zombie_y, center_x, center_y, radius):
     return math.sqrt(abs(zombie_x - center_x)) + math.sqrt(
         abs(zombie_y - center_y)
     ) <= math.sqrt(radius)
@@ -62,7 +62,6 @@ PW_BODY = 10
 class IgorLoop(GameLoop):
     def get_attack_sequence(self):
         attacks = []
-        units = self.world.units
 
         for (bx, by), base in self.bases.items():
             is_head = base.get("isHead", False)
@@ -86,7 +85,6 @@ class IgorLoop(GameLoop):
             if shoot:
                 continue
 
-            print("zombies", self.zombies)
             for (zx, zy), zombie in self.zombies.items():
                 if zombie["health"] <= 0:
                     continue
