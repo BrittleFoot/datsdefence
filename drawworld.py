@@ -175,6 +175,7 @@ class DrawWorld:
             self.uturn = self.tmap[low]
 
         if self.uturn and self.head is None:
+            head = None
             for e in ga(self.uturn, "base"):
                 if e.get("isHead", False):
                     head = e
