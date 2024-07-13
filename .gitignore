@@ -163,3 +163,7 @@ cython_debug/
 info.log
 
 imgui.ini
+
+
+data/replays/*
+!data/replays/README.md

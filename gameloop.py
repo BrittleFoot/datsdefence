@@ -70,10 +70,17 @@ class World:
 class GameLoop:
     """Наследуемся переопределяем loop"""
 
-    def __init__(self, is_test=True, once=False, replay: str = None):
+    def __init__(
+        self,
+        is_test=True,
+        once=False,
+        replay: str = None,
+        interactive=False,
+    ):
         self.running = False
         self.once = once
         self.relpay = replay
+        self.interactive = interactive
 
         self.client = ApiClient("test" if is_test else "prod")
 
@@ -96,7 +103,7 @@ class GameLoop:
         self.running = False
         self.stop()
 
-    def dump_world(self):
+    def replay_file(self):
         realm = self.world.units.get("realmName", "")
         uname = environ.get("USER", "denchec")
         name = f"{uname}-{realm}.ljson"
@@ -105,7 +112,10 @@ class GameLoop:
         if self.relpay:
             full = path.join("data", "replays", name)
 
-        with open(full, "a") as f:
+        return full
+
+    def dump_world(self):
+        with open(self.replay_file(), "a") as f:
             print(
                 json.dumps(
                     {"units": self.world.units, "world": self.world.world},
@@ -128,6 +138,9 @@ class GameLoop:
                 if self.relpay:
                     # Speed up replay
                     self.turn_end_sleep_sec /= 10
+                    if self.interactive:
+                        self.turn_end_sleep_sec = 0
+                        input(f"Turn: {self.turn}. Press Enter to continue...")
 
                 self.dump_world()
                 #

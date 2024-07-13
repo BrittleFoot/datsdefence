@@ -200,11 +200,11 @@ class IgorLoop(GameLoop):
 
 
 class CLI:
-    def main(self):
+    def test(self):
         IgorLoop(is_test=True).just_run_already()
 
-    def replay(self, file: str):
-        IgorLoop(is_test=True, replay=file).just_run_already()
+    def replay(self, file: str, interactive: bool = False):
+        IgorLoop(is_test=True, replay=file, interactive=interactive).just_run_already()
 
 
 if __name__ == "__main__":
