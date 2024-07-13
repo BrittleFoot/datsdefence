@@ -18,9 +18,11 @@ BLACK = (0.0, 0.0, 0.0)
 
 BASE = (0.0, 1.0, 1.0)
 BASE_HEAD = (0.0, 0.4, 1.0)
+BASE_ATTACK = (0.2, 0.6, 1.0)
 
 ENEMY = (1.0, 0.0, 0.0)
 ENEMY_HEAD = (1.0, 0.4, 0.0)
+ENEMY_ATTACK = (1.0, 0.6, 0.2)
 
 ZOMBIE = (0.0, 1.0, 0.0)
 SPAWNER = (1.0, 1.0, 0.0)
@@ -236,12 +238,13 @@ class World:
         for e in ga(self.uturn, "enemyBlocks"):
             if last := e.get("lastAttack"):
                 x, y = e["x"], e["y"]
-                self.draw_line(ENEMY, x, y, last["x"], last["y"])
+                self.draw_line(ENEMY_ATTACK, x, y, last["x"], last["y"])
 
         for e in ga(self.uturn, "base"):
             if last := e.get("lastAttack"):
                 x, y = e["x"], e["y"]
-                self.draw_line(BASE, x, y, last["x"], last["y"])
+
+                self.draw_line(BASE_ATTACK, x, y, last["x"], last["y"])
 
     def map(self):
         if self.empty:
