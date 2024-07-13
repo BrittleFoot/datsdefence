@@ -18,12 +18,12 @@ SCREEN = (800, 800)
 WHITE = (1.0, 1.0, 1.0)
 BLACK = (0.0, 0.0, 0.0)
 
-BASE = (0.0, 1.0, 1.0)
+BASE = (0.0, 0.7, 0.7)
 BASE_HEAD = (0.0, 0.4, 1.0)
 BASE_ATTACK = (0.2, 0.6, 1.0)
 
 ENEMY = (1.0, 0.0, 0.0)
-ENEMY_HEAD = (1.0, 0.2, 0.1)
+ENEMY_HEAD = (1.0, 0.2, 0.9)
 ENEMY_ATTACK = (1.0, 0.6, 0.2)
 
 ZOMBIE = (0.0, 1.0, 0.0)

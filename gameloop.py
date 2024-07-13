@@ -141,6 +141,7 @@ class GameLoop:
             "world": self.world.world,
         }
 
+        t = time.perf_counter()
         with open(self.replay_file(), "a") as f:
             print(
                 json.dumps(
@@ -149,6 +150,7 @@ class GameLoop:
                 ),
                 file=f,
             )
+        self.ui.timers["dump write"] = time.perf_counter() - t
 
         self.history.append(snap)
 
@@ -178,12 +180,14 @@ class GameLoop:
                 self.turn_end_sleep_sec = turn_delta / 1000
                 if self.relpay:
                     # Speed up replay
-                    self.turn_end_sleep_sec /= 10
+                    self.turn_end_sleep_sec /= 100
                     if self.interactive:
                         self.turn_end_sleep_sec = 0
                         input(f"Turn: {self.turn}. Press Enter to continue...")
 
+                t = time.perf_counter()
                 self.dump_world()
+                self.ui.timers["dump world"] = time.perf_counter() - t
                 #
                 ##
                 t = time.perf_counter()
