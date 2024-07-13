@@ -186,6 +186,8 @@ class World:
         self.realtime = True
         self.rquest_base_center = True
 
+        self.hover_base = (0, 0)
+
     def ui(self):
         if self.empty:
             with window("Config"):
@@ -198,6 +200,8 @@ class World:
 
             if imgui.button("Center Base") or chngd:
                 self.rquest_base_center = True
+
+            imgui.text_ansi(f"Move base: {self.hover_base}")
 
         with window("Turns"):
             low = min(self.tmap.keys())
@@ -216,6 +220,10 @@ class World:
 
         with window("Stats"):
             imgui.text_ansi(f"{json.dumps(self.uturn['player'], indent=2)}")
+
+        x, y = imgui.get_mouse_drag_delta(imgui.BUTTON_MOUSE_BUTTON_LEFT)
+        imgui.reset_mouse_drag_delta(imgui.BUTTON_MOUSE_BUTTON_LEFT)
+        self.hover_base = x, y
 
         if imgui.is_mouse_dragging(imgui.BUTTON_MOUSE_BUTTON_RIGHT):
             x, y = imgui.get_mouse_drag_delta(imgui.BUTTON_MOUSE_BUTTON_RIGHT)
@@ -278,6 +286,8 @@ class World:
         self.map_collection("zombies", ZOMBIE)
 
         self.draw_attacks()
+
+        self.draw(BASE, *self.hover_base)
 
     def run(self):
         # Main loop
