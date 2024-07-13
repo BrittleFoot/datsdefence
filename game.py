@@ -88,7 +88,7 @@ def zombie_priority(tc):
         return 2 * enemy["health"]
 
     if enemy.get("type", False) == "liner":
-        return 2 * enemy["health"]
+        return 0 * enemy["health"]
 
     return 10 * enemy["health"]
 
