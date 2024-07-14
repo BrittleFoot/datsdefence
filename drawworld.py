@@ -205,6 +205,7 @@ class DrawWorld:
         #
         self.adjustX = 0
         self.adjustY = 0
+        self.cross = True
 
         self.hover_base = (0, 0)
 
@@ -221,15 +222,28 @@ class DrawWorld:
             if imgui.button("Center Base") or chngd:
                 self.rquest_base_center = True
 
-            imgui.text_ansi(f"Move base: {self.hover_base}")
+            imgui.text_ansi(f"Cursor: {self.hover_base}")
+            cx, cy = self.hover_base
+            if self.head:
+                hx = self.head["x"]
+                hy = self.head["y"]
+                imgui.text_ansi(f"Head: {hx, hy}")
+                imgui.text_ansi(f"Diff: {cx - hx, cy - hy}")
 
+            imgui.text_ansi(f"Attacs: {self.show_attacks}")
             if imgui.button("Enable attacks"):
                 self.show_attacks = True
             if imgui.button("Disable attacks"):
                 self.show_attacks = False
 
-            ch, self.adjustX = imgui.drag_int("Adjust X", self.adjustX, 1, -100, 100)
-            ch, self.adjustY = imgui.drag_int("Adjust Y", self.adjustY, 1, -100, 100)
+            imgui.text_ansi(f"Cross: {self.cross}")
+            if imgui.button("Enable cross"):
+                self.cross = True
+            if imgui.button("Disable cross"):
+                self.cross = False
+
+            ch, self.adjustX = imgui.drag_int("Adjust X", self.adjustX, 1, -800, 800)
+            ch, self.adjustY = imgui.drag_int("Adjust Y", self.adjustY, 1, -800, 800)
 
         with window("Timers"):
             for k in self.timers:
@@ -257,8 +271,8 @@ class DrawWorld:
 
         if self.head:
             x, y = imgui.get_mouse_pos()
-            x = x + self.adjustX
-            y = y + self.adjustY
+            x = x + self.adjustX * 5
+            y = y + self.adjustY * 5
             hx, hy = self.head["x"], self.head["y"]
 
             s2 = SCREEN[1] / 2
@@ -300,6 +314,8 @@ class DrawWorld:
                         self.hover_base = (0, 0)
                         if self.head:
                             self.hover_base = (self.head["x"], self.head["y"])
+                            # self.adjustX = self.head["x"] / 2
+                            # self.adjustY = self.head["y"] / 2
 
             self.draw(opaque(c, e.get("health", 0)), x, y)
 

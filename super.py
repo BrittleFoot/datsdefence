@@ -1,5 +1,6 @@
 import math
 import time
+from collections import defaultdict
 from pprint import pprint
 
 import fire
@@ -21,23 +22,23 @@ def distance(x1, y1, x2, y2):
     return math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
 
 
-def cross(x, y):
-    yield x - 1, y
-    yield x, y - 1
-    yield x + 1, y
-    yield x, y + 1
+def cross(x, y, radius=1):
+    yield x - radius, y
+    yield x, y - radius
+    yield x + radius, y
+    yield x, y + radius
 
 
-def circle(x, y):
-    yield x - 1, y - 1
-    yield x - 1, y
-    yield x - 1, y + 1
-    yield x, y - 1
+def circle(x, y, radius=1):
+    yield x - radius, y - radius
+    yield x - radius, y
+    yield x - radius, y + radius
+    yield x, y - radius
     # yield x, y
-    yield x, y + 1
-    yield x + 1, y
-    yield x + 1, y - 1
-    yield x + 1, y + 1
+    yield x, y + radius
+    yield x + radius, y
+    yield x + radius, y - radius
+    yield x + radius, y + radius
 
 
 def build(x, y):
@@ -66,6 +67,9 @@ def getarr(dict, key):
 
 PW_HEAD = 40
 PW_BODY = 10
+
+
+SQUARE = 8
 
 
 def priority(tc):
@@ -105,28 +109,46 @@ class IgorLoop(GameLoop):
     def get_attack_sequence(self):
         attacks = []
 
-        zombie_targets = list(self.zombies.items())
-
-        head_unit = self.head
-        zombie_targets = [
-            (
-                (ex, ey),
-                enemy,
-                get_distance(ex, ey, head_unit["x"], head_unit["y"], 1),
-            )
-            for (ex, ey), enemy in zombie_targets
-        ]
-        zombie_targets = sorted(zombie_targets, key=zombie_rebalance_priority)
-
-        not_in_raduis = 0
         for (bx, by), base in self.bases.items():
             is_head = base.get("isHead", False)
             dmg = PW_HEAD if is_head else PW_BODY
             rng = 8 if is_head else 5
-
             bx, by = base["x"], base["y"]
+            ####
+            key = (bx // SQUARE, by // SQUARE)
+            zombie_targets = list(self.zsquares[key])
+            used = {key}
+            for x, y in circle(bx, by, radius=8):
+                key = (x // SQUARE, y // SQUARE)
+                if key in used:
+                    continue
+                zombie_targets.extend(self.zsquares[key])
 
-            enemy_targets = list(self.enemies.items())
+            key = (bx // SQUARE, by // SQUARE)
+            enemies = list(self.esquares[key])
+            used = {key}
+            for x, y in circle(bx, by, radius=8):
+                key = (x // SQUARE, y // SQUARE)
+                if key in used:
+                    continue
+                enemies.extend(self.esquares[key])
+
+            #####
+            # enemies, zombie_targets
+            #####
+
+            head_unit = self.head
+            zombie_targets = [
+                (
+                    (ex, ey),
+                    enemy,
+                    get_distance(ex, ey, head_unit["x"], head_unit["y"], 1),
+                )
+                for (ex, ey), enemy in zombie_targets
+            ]
+            zombie_targets = sorted(zombie_targets, key=zombie_rebalance_priority)
+
+            enemy_targets = enemies
             enemy_targets = [
                 ((ex, ey), enemy, get_distance(ex, ey, bx, by, rng))
                 for (ex, ey), enemy in enemy_targets
@@ -136,7 +158,7 @@ class IgorLoop(GameLoop):
 
             targets = enemy_targets + zombie_targets
 
-            for (ex, ey), enemy, usless_const in targets:
+            for (ex, ey), enemy, _ in targets:
                 if enemy["health"] <= 0:
                     continue
 
@@ -144,14 +166,7 @@ class IgorLoop(GameLoop):
                     attacks.append(attack(base["id"], ex, ey))
                     enemy["health"] -= dmg
                     break
-                else:
-                    not_in_raduis += 1
 
-        print(
-            f"base blocks {len(self.bases.items())} :Attacks {len(attacks)} \n"
-            f"enemy count {len(self.enemies.items())}  zombie count {len(self.zombies.items())}\n"
-            f"not_in_raduis {not_in_raduis}"
-        )
         return attacks
 
     def parse_map(self):
@@ -176,6 +191,14 @@ class IgorLoop(GameLoop):
             (zombie["x"], zombie["y"]): zombie
             for zombie in getarr(units, "enemyBlocks")
         }
+
+        self.zsquares = defaultdict(list)
+        for (x, y), z in self.zombies.items():
+            self.zsquares[(x // SQUARE, y // SQUARE)].append(((x, y), z))
+
+        self.esquares = defaultdict(list)
+        for (x, y), e in self.enemies.items():
+            self.esquares[(x // SQUARE, y // SQUARE)].append(((x, y), e))
 
         self.spawners = {
             (wall["x"], wall["y"]): wall
@@ -218,6 +241,7 @@ class IgorLoop(GameLoop):
 
         bases = list(self.bases.keys())
         headx, heady = self.head["x"], self.head["y"]
+
         bases = sorted(bases, key=lambda x: distance(x[0], x[1], headx, heady))
 
         for x0, y0 in bases:
@@ -255,17 +279,21 @@ class IgorLoop(GameLoop):
         self.ui.exit()
 
     def loop_body(self):
+        print("srart")
         t = time.perf_counter()
         self.parse_map()
         self.ui.timers["parse_map"] = time.perf_counter() - t
+        print("parsed")
 
         t = time.perf_counter()
         build_commands = self.get_build()
         self.ui.timers["build"] = time.perf_counter() - t
+        print("builded")
         #
         t = time.perf_counter()
         attack_commands = self.get_attack_sequence()
         self.ui.timers["attack"] = time.perf_counter() - t
+        print("attacked")
 
         commands = {
             "build": build_commands,
@@ -291,29 +319,35 @@ class IgorLoop(GameLoop):
 
 
 class CLI:
-    def test(self):
+    def wait(self, env: str):
         try:
-            p = ApiClient("test").participate()
-            pprint(p)
-            return
+            while True:
+                p = ApiClient(env).participate()
+                pprint(p)
+
+                wtime = p["startsInSec"]
+
+                time.sleep(min(wtime, 5))
 
         except Exception as e:
             if "NOT" in str(e):
                 print(e)
-                return
+                return False
 
+            if "realm" in str(e):
+                print(e)
+                return False
+
+        return True
+
+    def test(self):
+        if not self.wait("test"):
+            return
         IgorLoop(is_test=True).just_run_already()
 
     def prod(self):
-        try:
-            p = ApiClient("prod").participate()
-            pprint(p)
+        if not self.wait("prod"):
             return
-
-        except Exception as e:
-            if "NOT" in str(e):
-                print(e)
-                return
 
         IgorLoop(is_test=False).just_run_already()
 

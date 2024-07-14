@@ -59,6 +59,7 @@ class World:
     def next_replay(self):
         nxt = self.replayf.readline()
         if not nxt:
+            return self.units, self.world
             raise StopIteration("End of replay")
 
         snap = json.loads(nxt)
@@ -85,6 +86,7 @@ class GameLoop:
         self.relpay = replay
         self.interactive = interactive
         self.history = []
+        self.head = None
 
         self.client = ApiClient("test" if is_test else "prod")
 
@@ -181,7 +183,7 @@ class GameLoop:
                 self.turn_end_sleep_sec = turn_delta / 1000
                 if self.relpay:
                     # Speed up replay
-                    self.turn_end_sleep_sec /= 10
+                    self.turn_end_sleep_sec /= 100
                     if self.interactive:
                         self.turn_end_sleep_sec = 0
                         input(f"Turn: {self.turn}. Press Enter to continue...")
@@ -201,7 +203,8 @@ class GameLoop:
                     return
 
         except Exception as e:
-            print(e)
+            print("LOOP ESXEPTIEN", e)
+            logger.exception(e)
             raise e
         except KeyboardInterrupt:
             print("KeyboardInterrupt")
