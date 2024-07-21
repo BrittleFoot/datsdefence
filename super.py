@@ -2,6 +2,8 @@ import math
 import time
 from collections import defaultdict
 from pprint import pprint
+from queue import Empty, Queue
+from threading import Thread
 
 import fire
 
@@ -265,7 +267,29 @@ class IgorLoop(GameLoop):
         return commands
 
     def start(self):
+        self.send_q = Queue()
+        self.send_demon = Thread(target=self.send_loop)
         self.ui = DrawWorld(self.relpay, self)
+        self.send_demon.start()
+
+    def send_loop(self):
+        while self.running:
+            try:
+                commands = self.send_q.get(timeout=1)
+                print("😈 SENDING DEMON")
+                print("  BUILDS:", len(commands.get("build", [])))
+                print(" ATTACKS:", len(commands.get("attack", [])))
+
+                if "moveBase" in commands:
+                    print(f"MVEBASE: {commands['moveBase']} 🏡✈️")
+                else:
+                    print("")
+
+                self.client.command(commands)
+
+                print("====✅====")
+            except Empty:
+                pass
 
     def update_ui(self):
         if self.ui.realtime and self.relpay:
@@ -277,44 +301,34 @@ class IgorLoop(GameLoop):
     def stop(self):
         print("stop")
         self.ui.exit()
+        print("join")
+        self.send_demon.join()
 
     def loop_body(self):
-        print("srart")
         t = time.perf_counter()
         self.parse_map()
         self.ui.timers["parse_map"] = time.perf_counter() - t
-        print("parsed")
 
         t = time.perf_counter()
         build_commands = self.get_build()
         self.ui.timers["build"] = time.perf_counter() - t
-        print("builded")
         #
         t = time.perf_counter()
         attack_commands = self.get_attack_sequence()
         self.ui.timers["attack"] = time.perf_counter() - t
-        print("attacked")
 
         commands = {
             "build": build_commands,
             "attack": attack_commands,
         }
 
-        print(">>>>>>>>>")
         if self.move_head:
             commands["moveBase"] = self.move_head
             self.move_head = None
 
-        print(" BUILDS:", len(commands.get("build", [])))
-        print("ATTACKS:", len(commands.get("attack", [])))
-
-        if "moveBase" in commands:
-            print(f"Moving base to {commands['moveBase']}!!")
-
-        print("<<<<<<<<<")
-        execured = self.client.command(commands)
-        # print("ERRORS:", len(execured.get("errors", [])))
-
+        t = time.perf_counter()
+        self.send_q.put(commands)
+        self.ui.timers["q"] = time.perf_counter() - t
         print("=========")
 
 
@@ -326,13 +340,16 @@ class CLI:
                 pprint(p)
 
                 wtime = p["startsInSec"]
-
                 time.sleep(min(wtime, 5))
 
         except Exception as e:
             if "NOT" in str(e):
                 print(e)
                 return False
+
+            if "are participating" in str(e):
+                print(e)
+                return True
 
             if "realm" in str(e):
                 print(e)
@@ -343,6 +360,7 @@ class CLI:
     def test(self):
         if not self.wait("test"):
             return
+
         IgorLoop(is_test=True).just_run_already()
 
     def prod(self):

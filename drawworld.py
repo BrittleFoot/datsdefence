@@ -230,6 +230,10 @@ class DrawWorld:
                 imgui.text_ansi(f"Head: {hx, hy}")
                 imgui.text_ansi(f"Diff: {cx - hx, cy - hy}")
 
+                if self.adjustX == 0:
+                    self.adjustX = cx - hx
+                    self.adjustY = cy - hy
+
             imgui.text_ansi(f"Attacs: {self.show_attacks}")
             if imgui.button("Enable attacks"):
                 self.show_attacks = True
@@ -271,8 +275,8 @@ class DrawWorld:
 
         if self.head:
             x, y = imgui.get_mouse_pos()
-            x = x + self.adjustX * 5
-            y = y + self.adjustY * 5
+            x = x + self.adjustX * self.scale
+            y = y + self.adjustY * self.scale
             hx, hy = self.head["x"], self.head["y"]
 
             s2 = SCREEN[1] / 2
@@ -314,8 +318,20 @@ class DrawWorld:
                         self.hover_base = (0, 0)
                         if self.head:
                             self.hover_base = (self.head["x"], self.head["y"])
-                            # self.adjustX = self.head["x"] / 2
-                            # self.adjustY = self.head["y"] / 2
+
+            self.draw(opaque(c, e.get("health", 0)), x, y)
+
+    def map_zombie(self):
+        for e in ga(self.uturn, "zombies"):
+            c = ZOMBIE
+            x, y = e["x"], e["y"]
+
+            tp = e.get("type")
+
+            if tp == "chaos_knight":
+                c = (0.0, 0.6, 0.1)
+            elif tp == "juggernaut":
+                c = (0.0, 1.0, 0.6)
 
             self.draw(opaque(c, e.get("health", 0)), x, y)
 
@@ -352,7 +368,7 @@ class DrawWorld:
         self.map_walls()
         self.map_collection("base", BASE)
         self.map_collection("enemyBlocks", ENEMY)
-        self.map_collection("zombies", ZOMBIE)
+        self.map_zombie()
 
         if self.show_attacks:
             self.draw_attacks()

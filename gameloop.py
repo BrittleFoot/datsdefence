@@ -173,7 +173,10 @@ class GameLoop:
                 if not at_least_one:
                     self.update_ui()
 
+                t = time.perf_counter()
                 turn, turn_delta = self.world.update()
+                self.ui.timers["update"] = time.perf_counter() - t
+
                 if turn <= self.turn:
                     logger.info(f"Turn {turn} not changed, skipping")
                     continue
@@ -183,7 +186,7 @@ class GameLoop:
                 self.turn_end_sleep_sec = turn_delta / 1000
                 if self.relpay:
                     # Speed up replay
-                    self.turn_end_sleep_sec /= 100
+                    self.turn_end_sleep_sec /= 1
                     if self.interactive:
                         self.turn_end_sleep_sec = 0
                         input(f"Turn: {self.turn}. Press Enter to continue...")
