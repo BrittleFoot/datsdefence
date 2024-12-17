@@ -5,6 +5,7 @@ from __future__ import absolute_import
 
 import sys
 from contextlib import contextmanager
+from types import Color
 from typing import NamedTuple
 
 import imgui
@@ -25,11 +26,9 @@ def window(name, **kwargs):
         imgui.end()
 
 
-class Color(NamedTuple):
-    r: float
-    g: float
-    b: float
-    a: float
+class Vec2(NamedTuple):
+    x: float
+    y: float
 
 
 SIZE = 16
@@ -40,6 +39,7 @@ class Brush:
     def __init__(self, world: "DrawWorld"):
         self.draw_list = imgui.get_window_draw_list()
         self.x0, self.y0 = imgui.get_window_position()
+        self.zero = Vec2(self.x0, self.y0)
         self.world = world
 
     def square(self, cx, cy, color: Color = Color(1, 1, 1, 0.8)):
@@ -89,7 +89,11 @@ class DrawWorld:
         #
 
     def init_ui(self):
-        self.scale = 1
+        self.scale = 2
+
+    @property
+    def vscale(self):
+        return Vec2(self.scale, self.scale)
 
     def get_win_mouse_pos(self):
         x, y = imgui.get_mouse_pos()
@@ -130,7 +134,7 @@ class DrawWorld:
         while 1:
             self.handle_system_events()
 
-            self.print_pressed_keys()
+            # self.print_pressed_keys()
 
             if imgui.is_key_pressed(keys.KEY_MINUS, repeat=True):
                 self.scale -= 0.1
@@ -152,6 +156,9 @@ class DrawWorld:
 
                 brush.square(149, 150, (1, 0, 0, 1))
                 brush.image(150, 150, "snowman_angry")
+
+                brush.image(200, 201, "snowman_happy")
+                brush.image(200, 200, "snowman_happy")
 
                 x, y = self.get_win_mouse_pos()
                 brush.square(x, y, (1, 1, 1, 1))
