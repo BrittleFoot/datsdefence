@@ -169,3 +169,4 @@ data/replays/*
 !data/replays/README.md
 
 *.ljson
+.DS_Store
