@@ -4,16 +4,15 @@
 from __future__ import absolute_import
 
 import sys
+from collections import defaultdict
 from contextlib import contextmanager
-from types import Color
-from typing import NamedTuple
 
 import imgui
 import OpenGL.GL as gl
 import pygame
 from imgui.integrations.pygame import PygameRenderer
 
-import keys
+from itypes import Color, Vec2
 from texture import get_texture_cached
 
 
@@ -26,13 +25,16 @@ def window(name, **kwargs):
         imgui.end()
 
 
-class Vec2(NamedTuple):
-    x: float
-    y: float
-
-
 SIZE = 16
 HSIZE = SIZE // 2
+
+
+def snap(vec):
+    return ((Vec2(*vec) + HSIZE) // SIZE) * SIZE
+
+
+def ongrid(grid_coords):
+    return Vec2(*grid_coords) * SIZE
 
 
 class Brush:
@@ -42,33 +44,50 @@ class Brush:
         self.zero = Vec2(self.x0, self.y0)
         self.world = world
 
-    def square(self, cx, cy, color: Color = Color(1, 1, 1, 0.8)):
-        top, left = cy - HSIZE, cx - HSIZE
-        bottom, right = cy + HSIZE, cx + HSIZE
+    def square(self, center, color: Color = Color(1, 1, 1, 0.8)):
+        a = center - self.world.size / 2
+        b = center + self.world.size / 2
 
         self.draw_list.add_rect_filled(
-            self.x0 + self.world.scale * left,
-            self.y0 + self.world.scale * top,
-            self.x0 + self.world.scale * right,
-            self.y0 + self.world.scale * bottom,
+            *(self.zero + a),
+            *(self.zero + b),
             imgui.get_color_u32_rgba(*color),
         )
 
-    def image(self, cx, cy, name, color: Color = Color(1, 1, 1, 1)):
-        top, left = cy - HSIZE, cx - HSIZE
-        bottom, right = cy + HSIZE, cx + HSIZE
+    def image(
+        self,
+        center,
+        name,
+        color: Color = Color(1, 1, 1, 1),
+        offset_percent=Vec2(0, 0),
+        scale_percent=Vec2(1, 1),
+    ):
+        size = scale_percent * self.world.size
+        a = Vec2(*center) - size / 2 + offset_percent * size
+        b = Vec2(*center) + size / 2 + offset_percent * size
 
         texture = get_texture_cached(name)
 
+        start = self.zero + a
+        end = self.zero + b
+
         self.draw_list.add_image(
             texture.texture_id,
-            (self.x0 + self.world.scale * left, self.y0 + self.world.scale * top),
-            (
-                self.x0 + self.world.scale * right,
-                self.y0 + self.world.scale * bottom,
-            ),
+            tuple(start),
+            tuple(end),
             col=imgui.get_color_u32_rgba(*color),
         )
+
+
+key_handlers = defaultdict(list)
+
+
+def key_handler(key, mod=0):
+    def decorator(func):
+        key_handlers[(key, mod)].append(func)
+        return func
+
+    return decorator
 
 
 class DrawWorld:
@@ -89,37 +108,47 @@ class DrawWorld:
         #
 
     def init_ui(self):
+        self.scale_speed = 0.1
+        self.scale_max = 10
+
         self.scale = 2
+        self.offset = Vec2(0, 0)
+
+        self.window_size = Vec2(0, 0)
+        self.window_mouse_pos = Vec2(0, 0)
 
     @property
     def vscale(self):
         return Vec2(self.scale, self.scale)
 
+    @property
+    def size(self):
+        return SIZE * self.scale
+
+    @property
+    def soffset(self):
+        """Scaled offset"""
+        return self.offset * self.scale
+
     def get_win_mouse_pos(self):
-        x, y = imgui.get_mouse_pos()
-        pos_x, pos_y = imgui.get_window_position()
+        mouse = Vec2(*imgui.get_mouse_pos())
+        zero = Vec2(*imgui.get_window_position())
 
-        x = (x - pos_x) / self.scale
-        y = (y - pos_y) / self.scale
-        return x, y
-
-    def print_pressed_keys(self):
-        """
-        Print the indexes of the keys that are currently pressed
-
-        Imgui doesn't have a way to get the keys that are currently pressed
-        Manual mapping required see 'keys.py'
-        """
-        indexes = map(lambda a: a[0] * a[1], enumerate(self.io.keys_down))
-        pressed_indexes = list(filter(bool, indexes))
-        if pressed_indexes:
-            print(pressed_indexes)
-        return pressed_indexes
+        return mouse - zero
 
     def handle_system_events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit(0)
+
+            if event.type == pygame.KEYDOWN:
+                key = (event.key, event.mod)
+                if key in key_handlers:
+                    for handler in key_handlers[key]:
+                        handler(self)
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                self.zoom_wheel(event)
+
             self.impl.process_event(event)
         self.impl.process_inputs()
 
@@ -130,41 +159,92 @@ class DrawWorld:
         self.impl.render(imgui.get_draw_data())
         pygame.display.flip()
 
+    def zoom_wheel(self, event):
+        if event.button == pygame.BUTTON_WHEELDOWN:
+            self.zoom_out()
+        if event.button == pygame.BUTTON_WHEELUP:
+            self.zoom_in()
+
+    @key_handler(pygame.K_MINUS)
+    def zoom_out(self):
+        if self.scale < self.scale_speed * 2:
+            return
+
+        self.scale = max(self.scale_speed, self.scale - self.scale_speed)
+        self.zoom_offset()
+
+    @key_handler(pygame.K_EQUALS)
+    def zoom_in(self):
+        if self.scale >= self.scale_max:
+            return
+
+        self.scale = min(self.scale_max, self.scale + self.scale_speed)
+        self.zoom_offset()
+
+    def zoom_offset(self):
+        center = self.window_size / 2
+        mouse = self.window_mouse_pos
+
+        self.offset = self.offset + (center - mouse) * self.scale * self.scale_speed / 2
+
+    def snap(self, vec):
+        offset_snap = (self.soffset) % self.size
+        centered_vec = Vec2(*vec) + self.size / 2 - offset_snap
+        return (centered_vec // self.size) * self.size + offset_snap
+
+    def fromgrid(self, grid_coords):
+        return Vec2(*grid_coords) * self.size + self.soffset
+
     def main(self):
         while 1:
             self.handle_system_events()
 
-            # self.print_pressed_keys()
-
-            if imgui.is_key_pressed(keys.KEY_MINUS, repeat=True):
-                self.scale -= 0.1
-
-            if imgui.is_key_pressed(keys.KEY_PLUS, repeat=True):
-                self.scale += 0.1
-
             imgui.new_frame()
+
+            if imgui.is_mouse_dragging(imgui.BUTTON_MOUSE_BUTTON_RIGHT):
+                x, y = imgui.get_mouse_drag_delta(imgui.BUTTON_MOUSE_BUTTON_RIGHT)
+                self.offset = self.offset + Vec2(x, y) * (1 / self.scale)
+                imgui.reset_mouse_drag_delta(imgui.BUTTON_MOUSE_BUTTON_RIGHT)
 
             flags = (
                 imgui.WINDOW_NO_TITLE_BAR
-                | imgui.WINDOW_NO_RESIZE
+                # | imgui.WINDOW_NO_RESIZE
                 | imgui.WINDOW_NO_MOVE
             )
             with window("Battlefield", flags=flags):
+                self.window_size = Vec2(*imgui.get_window_size())
+                self.window_mouse_pos = Vec2(*imgui.get_mouse_pos())
+
                 brush = Brush(self)
-                brush.square(100, 100, (1, 0, 0, 1))
-                brush.square(0, 0, (1, 0, 0, 1))
+                brush.square(self.fromgrid((0, 0)), (1, 0, 0, 1))
+                brush.square(self.fromgrid((1, 1)), (1, 0, 0, 1))
+                brush.square(self.fromgrid((2, 2)), (1, 0, 0, 1))
 
-                brush.square(149, 150, (1, 0, 0, 1))
-                brush.image(150, 150, "snowman_angry")
-
-                brush.image(200, 201, "snowman_happy")
-                brush.image(200, 200, "snowman_happy")
+                brush.image(self.fromgrid((5, 5)), "snowman_happy")
+                brush.image(self.fromgrid((5, 6)), "snowman_angry")
 
                 x, y = self.get_win_mouse_pos()
-                brush.square(x, y, (1, 1, 1, 1))
+
+                cursor_params = {
+                    "name": "cursor",
+                    "offset_percent": Vec2(0.5, 0.5),
+                    "scale_percent": Vec2(2, 2),
+                }
+                brush.square(self.snap((x, y)), (0.3, 0.4, 0.9, 0.15))
+                brush.image(self.snap((x, y)), **cursor_params)
+                brush.image(Vec2(x, y), color=(1, 1, 1, 0.1), **cursor_params)
 
             with window("Controls"):
                 _, self.scale = imgui.drag_float("Scale", self.scale, 0.1, 0.1, 10)
+                imgui.same_line()
+                if imgui.button("Reset Scale"):
+                    self.scale = 2
+
+                imgui.text_ansi(f"Offset: {self.offset}")
+                imgui.text_ansi(f"Snap: {(self.soffset) % self.size}")
+                imgui.same_line()
+                if imgui.button("Reset Offset"):
+                    self.offset = Vec2(0, 0)
 
             ###############################
             self.clear_render()
