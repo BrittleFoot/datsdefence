@@ -236,12 +236,8 @@ class DrawWorld:
 
             with window("Controls"):
                 _, self.scale = imgui.drag_float("Scale", self.scale, 0.1, 0.1, 10)
-                imgui.same_line()
                 if imgui.button("Reset Scale"):
                     self.scale = 2
-
-                imgui.text_ansi(f"Offset: {self.offset}")
-                imgui.text_ansi(f"Snap: {(self.soffset) % self.size}")
                 imgui.same_line()
                 if imgui.button("Reset Offset"):
                     self.offset = Vec2(0, 0)
