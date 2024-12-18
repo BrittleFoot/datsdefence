@@ -114,6 +114,7 @@ class DrawWorld:
         self.scale = 2
         self.offset = Vec2(0, 0)
 
+        self.window_pos = Vec2(0, 0)
         self.window_size = Vec2(0, 0)
         self.window_mouse_pos = Vec2(0, 0)
 
@@ -170,22 +171,20 @@ class DrawWorld:
         if self.scale < self.scale_speed * 2:
             return
 
-        self.scale = max(self.scale_speed, self.scale - self.scale_speed)
-        self.zoom_offset()
+        return self.zoom(-self.scale_speed * self.scale / 2)
 
     @key_handler(pygame.K_EQUALS)
     def zoom_in(self):
         if self.scale >= self.scale_max:
             return
 
-        self.scale = min(self.scale_max, self.scale + self.scale_speed)
-        self.zoom_offset()
+        return self.zoom(self.scale_speed * self.scale / 2)
 
-    def zoom_offset(self):
-        center = self.window_size / 2
-        mouse = self.window_mouse_pos
+    def zoom(self, speed):
+        self.scale = max(self.scale_speed, min(self.scale_max, self.scale + speed))
 
-        self.offset = self.offset + (center - mouse) * self.scale * self.scale_speed / 2
+        mouse = self.window_mouse_pos - self.window_pos
+        self.offset = self.offset + mouse * (1 / self.scale - 1 / (self.scale - speed))
 
     def snap(self, vec):
         offset_snap = (self.soffset) % self.size
@@ -212,6 +211,7 @@ class DrawWorld:
                 | imgui.WINDOW_NO_MOVE
             )
             with window("Battlefield", flags=flags):
+                self.window_pos = Vec2(*imgui.get_window_position())
                 self.window_size = Vec2(*imgui.get_window_size())
                 self.window_mouse_pos = Vec2(*imgui.get_mouse_pos())
 
@@ -230,9 +230,9 @@ class DrawWorld:
                     "offset_percent": Vec2(0.5, 0.5),
                     "scale_percent": Vec2(2, 2),
                 }
+                brush.image(Vec2(x, y), color=(1, 1, 1, 0.1), **cursor_params)
                 brush.square(self.snap((x, y)), (0.3, 0.4, 0.9, 0.15))
                 brush.image(self.snap((x, y)), **cursor_params)
-                brush.image(Vec2(x, y), color=(1, 1, 1, 0.1), **cursor_params)
 
             with window("Controls"):
                 _, self.scale = imgui.drag_float("Scale", self.scale, 0.1, 0.1, 10)
